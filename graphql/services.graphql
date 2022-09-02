@@ -1,0 +1,35 @@
+query GetAllService {
+  getAllService {
+    _id
+    serviceCategory
+    serviceName
+    subService
+    subSubService
+    for
+    description
+    estimatedTime
+    price
+    inputLimit
+    fileFormat
+    deliveryFormat
+    deliveryDays
+    maxDuration
+    numberOfReferenceFileUploads
+    setOfRevisions
+    revisionsDelivery
+    mixVocalTuning
+    mixProcessingReverbs
+    mixProcessingDelays
+    mixProcessingOtherFx
+    addOn {
+      type
+      value
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation AddService($input: ServicesInput!) {
+  addService(input: $input)
+}
