@@ -93,7 +93,7 @@ export type Payment = {
 export type Query = {
   __typename?: 'Query';
   addUserService: Scalars['Boolean'];
-  adminLogin: Scalars['String'];
+  adminLogin: Scalars['Boolean'];
   adminLogout: Scalars['Boolean'];
   allAdmins: Array<Admin>;
   completeAccount: Scalars['Boolean'];
@@ -387,7 +387,7 @@ export type AdminLoginQueryVariables = Exact<{
 }>;
 
 
-export type AdminLoginQuery = { __typename?: 'Query', adminLogin: string };
+export type AdminLoginQuery = { __typename?: 'Query', adminLogin: boolean };
 
 export type MeAdminQueryVariables = Exact<{ [key: string]: never; }>;
 
