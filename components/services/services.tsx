@@ -1,9 +1,4 @@
-import {
-  Button,
-  CircularProgress,
-  LinearProgress,
-  Toolbar,
-} from "@mui/material";
+import { Button, LinearProgress, Snackbar } from "@mui/material";
 import {
   DataGrid,
   GridColDef,
@@ -14,162 +9,227 @@ import {
 import { useEffect, useState } from "react";
 import {
   Services,
+  ServicesInput,
   useAddServiceMutation,
   useGetAllServiceLazyQuery,
-  useGetAllServiceQuery,
 } from "../../generated/graphql";
 import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
-import { parse, ParseStepResult } from "papaparse";
-interface ServiceInterface {
-  _id: string;
-  serviceCategory: string;
-  serviceName: string;
-  subService: string;
-  subSubService: string;
-  for: string;
-  description: string;
-  estimatedTime: number;
-  price: number;
-  inputLimit: number;
-  fileFormat: string;
-  deliveryFormat: string;
-  deliveryDays: number;
-  maxDuration: number;
-  numberOfReferenceFileUploads: number;
-  setOfRevisions: number;
-  revisionsDelivery: number;
-  mixVocalTuning: string;
-  mixProcessingReverbs: number;
-  mixProcessingDelays: number;
-  mixProcessingOtherFx: number;
-  addOn: {
-    type: string;
-    value: number;
-  }[];
-}
+import { parse, ParseResult, ParseStepResult } from "papaparse";
+import { durationSeconds } from "../../utility/helpers";
+
+const columns: GridColDef[] = [
+  { field: "mainCategory", headerName: "Main Category", width: 150 },
+  { field: "subCategory", headerName: "Sub Category", width: 150 },
+  { field: "serviceName", headerName: "Service Name", width: 150 },
+  { field: "subService", headerName: "Sub Service", width: 150 },
+  { field: "subService2", headerName: "Sub Service 2", width: 150 },
+  { field: "for", headerName: "For", width: 150 },
+  { field: "description", headerName: "Description", width: 150 },
+  {
+    field: "estimatedTime",
+    headerName: "Estimated time given (Hours)",
+    width: 150,
+  },
+  { field: "price", headerName: "Price", width: 150 },
+  { field: "inputTrackLimit", headerName: "Input / Track Limit", width: 150 },
+  { field: "uploadFileFormat", headerName: "Upload File Format", width: 150 },
+  {
+    field: "deliveryFileFormat",
+    headerName: "Delivery File Format",
+    width: 150,
+  },
+  { field: "deliveryDays", headerName: "Delivery (Days)", width: 150 },
+  {
+    field: "maxDuration",
+    headerName: "Maximum Song / File Duration",
+    width: 150,
+  },
+  {
+    field: "numberOfReferenceFileUploads",
+    headerName: "Number of reference file uploads",
+    width: 150,
+  },
+  { field: "setOfRevisions", headerName: "Set of Revisions", width: 150 },
+  {
+    field: "revisionsDelivery",
+    headerName: "Revisions Delivery (Days)",
+    width: 150,
+  },
+  {
+    field: "mixVocalTuning",
+    headerName: "Mix Processing: Vocal Tuning",
+    width: 150,
+  },
+  {
+    field: "mixProcessingReverbs",
+    headerName: "Mix Processing: Reverbs",
+    width: 150,
+  },
+  {
+    field: "mixProcessingDelays",
+    headerName: "Mix Processing: Delays",
+    width: 150,
+  },
+  {
+    field: "mixProcessingOtherFx",
+    headerName: "Mix Processing: Other Fx",
+    width: 150,
+  },
+  {
+    field: "Add on: Extra Revision",
+    headerName: "Add on: Extra Revision",
+    width: 150,
+  },
+  {
+    field: "Add on: 10 Tracks (Adds 1 day to delivery per add on)",
+    headerName: "Add on: 10 Tracks (Adds 1 day to delivery per add on)",
+    width: 150,
+  },
+  {
+    field: "Add on: 30s Duration (Adds 1 day to delivery per add on)",
+    headerName: "Add on: 30s Duration (Adds 1 day to delivery per add on)",
+    width: 150,
+  },
+];
 
 export default function Service() {
   const [getAllService] = useGetAllServiceLazyQuery();
   const [data, setData] = useState<Services[]>([]);
+  const [showError, setShowError] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+
+  const handleErrorClose = (
+    event: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setShowError(false);
+  };
+
   useEffect(() => {
     const fetchServices = async () => {
       setLoading(true);
       const response = await getAllService();
-      if (response.data?.getAllService) {
-        setColumns((prev) => {
-          var newData = [...prev];
-          response.data!.getAllService.map((ind) =>
-            ind.addOn.map((indx) =>
-              newData.push({
-                field: indx.type,
-                headerName: indx.type,
-                width: 150,
-              })
-            )
-          );
-          return newData;
-        });
-
-        setData(
-          response.data?.getAllService.map((ind) => ({
-            ...ind,
-            id: ind._id,
-            ...ind.addOn.map((indx) => ({ [indx.type]: indx.value })),
-          })) ?? []
-        );
+      if (response.error) {
+        setErrorMessage(response.error.message.toString());
+        setShowError(true);
+        setLoading(false);
+        return;
       }
+
+      if (!response.data) {
+        setErrorMessage("Something went wrong, please try again later");
+        setShowError(true);
+        setLoading(false);
+        return;
+      }
+
+      const servicesDataRaw =
+        response.data?.getAllService.map((ind) => ({
+          ...ind,
+          id: ind._id,
+        })) ?? [];
+
+      const servicesData = servicesDataRaw.map((el) => {
+        var sObj: any = { ...el };
+        el.addOn.map((elem) => {
+          sObj[elem.type] = elem.value;
+        });
+        delete sObj.addOn;
+        return sObj;
+      });
+
+      setData(servicesData);
+
       setLoading(false);
     };
     fetchServices();
   }, []);
   const [addService] = useAddServiceMutation();
-  const [columns, setColumns] = useState<GridColDef[]>([
-    { field: "serviceCategory", headerName: "Service Category", width: 150 },
-    { field: "serviceName", headerName: "Service Name", width: 150 },
-    { field: "subService", headerName: "Sub Service", width: 150 },
-    { field: "subSubService", headerName: "Sub Sub Service", width: 150 },
-    { field: "for", headerName: "For Information", width: 150 },
-    { field: "description", headerName: "Description", width: 150 },
-    { field: "estimatedTime", headerName: "Estimated Time", width: 150 },
-    { field: "price", headerName: "Price", width: 150 },
-    { field: "inputLimit", headerName: "Input Limit", width: 150 },
-    { field: "fileFormat", headerName: "File Format", width: 150 },
-    { field: "deliveryFormat", headerName: "Delivery Format", width: 150 },
-    { field: "deliveryDate", headerName: "Delivery Date", width: 150 },
-    { field: "maxDuration", headerName: "Max Duration", width: 150 },
-    {
-      field: "numberOfReferenceFileUploads",
-      headerName: "Number Of File Uploads",
-      width: 150,
-    },
-    { field: "setOfRevisions", headerName: "Set Of Revisions", width: 150 },
-    {
-      field: "revisionsDelivery",
-      headerName: "Revisions Delivery",
-      width: 150,
-    },
-    { field: "mixVocalTuning", headerName: "Mix - Vocal Tuning", width: 150 },
-    {
-      field: "mixProcessingReverbs",
-      headerName: "Mix - Processing Reverbs",
-      width: 150,
-    },
-    {
-      field: "mixProcessingDelays",
-      headerName: "Mix - Processing Delays",
-      width: 150,
-    },
-    {
-      field: "mixProcessingOtherFx",
-      headerName: "Mix - Processing Other Fx",
-      width: 150,
-    },
-  ]);
 
   function handleFileChange(inputFile: File) {
-    setLoading(true);
     parse(inputFile, {
       worker: true,
-      step: async function (row: ParseStepResult<string>) {
-        console.log(row);
-        await addService({
-          variables: {
-            input: {
-              serviceCategory: row.data[0],
-              serviceName: row.data[1],
-              subService: row.data[2],
-              subSubService: row.data[3],
-              for: row.data[4],
-              description: row.data[5],
-              estimatedTime: parseInt(row.data[6]),
-              price: parseInt(row.data[7]),
-              inputLimit: parseInt(row.data[8]),
-              fileFormat: row.data[9],
-              deliveryFormat: row.data[10],
-              deliveryDays: parseInt(row.data[11]),
-              maxDuration: parseInt(row.data[12]),
-              numberOfReferenceFileUploads: parseInt(row.data[13]),
-              setOfRevisions: parseInt(row.data[14]),
-              revisionsDelivery: parseInt(row.data[15]),
-              mixVocalTuning: row.data[16],
-              mixProcessingReverbs: row.data[17],
-              mixProcessingDelays: row.data[18],
-              mixProcessingOtherFx: row.data[19],
-              addOn: [
-                {
-                  type: "Extra Revision",
-                  value: parseInt(row.data[20]),
-                },
-                {
-                  type: "30 Second",
-                  value: parseInt(row.data[21]),
-                },
-              ],
+      complete: async function (row: ParseResult<string>) {
+        const data: ServicesInput[] = row.data.map((el) => ({
+          mainCategory: el[0],
+          subCategory: el[1],
+          serviceName: el[2],
+          subService: el[3] === "" ? null : el[3],
+          subService2: el[4] === "" ? null : el[4],
+          for: el[5] === "" ? null : el[5],
+          description: el[6] === "" ? null : el[6],
+          estimatedTime: el[7] === "" ? null : parseInt(el[7]),
+          price: parseInt(el[8] === "" ? "0" : el[8]),
+          inputTrackLimit: el[9] === "" ? null : parseInt(el[9]),
+          uploadFileFormat: el[10] === "" ? [] : el[10].split(","),
+          deliveryFileFormat: el[11] === "" ? [] : el[11].split(","),
+          deliveryDays: el[12] === "" ? null : parseInt(el[12]),
+          maxFileDuration: el[13] === "" ? null : durationSeconds(el[13]),
+          numberOfReferenceFileUploads: el[14] === "" ? null : parseInt(el[14]),
+          setOfRevisions: el[15] === "" ? null : parseInt(el[15]),
+          revisionsDelivery: el[16] === "" ? null : parseInt(el[16]),
+          mixVocalTuning: el[17] === "" ? null : el[17],
+          mixProcessingReverbs: el[18] === "" ? null : el[18],
+          mixProcessingDelays: el[19] === "" ? null : el[19],
+          mixProcessingOtherFx: el[20] === "" ? null : el[20],
+          addOn: [
+            {
+              type: "Add on: Extra Revision",
+              value: el[21] === "" ? null : parseInt(el[21]),
             },
-          },
+            {
+              type: "Add on: 10 Tracks (Adds 1 day to delivery per add on)",
+              value: el[22] === "" ? null : parseInt(el[22]),
+            },
+            {
+              type: "Add on: 30s Duration (Adds 1 day to delivery per add on)",
+              value: el[23] === "" ? null : parseInt(el[23]),
+            },
+          ],
+        }));
+
+        setLoading(true);
+
+        const { data: addData, errors } = await addService({
+          variables: { input: data },
         });
-      },
-      complete: function () {
+
+        if (errors) {
+          setLoading(false);
+          setErrorMessage(errors[0].message);
+          setShowError(true);
+          return;
+        }
+
+        if (!addData || !addData.addService) {
+          setLoading(false);
+          setErrorMessage("Something went wrong, try again later");
+          setShowError(true);
+          return;
+        }
+
+        const finalData: Services[] = data.map((el) => ({
+          ...el,
+          _id:
+            Date.now().toString(36) + Math.random().toString(36).substring(2),
+          id: Date.now().toString(36) + Math.random().toString(36).substring(2),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }));
+
+        const servicesData = finalData.map((el) => {
+          var sObj: any = { ...el };
+          el.addOn.map((elem) => {
+            sObj[elem.type] = elem.value;
+          });
+          delete sObj.addOn;
+          return sObj;
+        });
+        setData(servicesData);
         setLoading(false);
       },
     });
@@ -206,19 +266,27 @@ export default function Service() {
     );
   }
   const [loading, setLoading] = useState<boolean>(false);
-  // const [servicesData, setServicesData] = useState<Services[]>([]);
   return (
-    <DataGrid
-      rows={data}
-      columns={columns}
-      components={{
-        Toolbar: CustomToolbar,
-        LoadingOverlay: LinearProgress,
-      }}
-      pageSize={10}
-      rowsPerPageOptions={[5]}
-      checkboxSelection
-      loading={loading}
-    />
+    <>
+      <DataGrid
+        rows={data}
+        columns={columns}
+        components={{
+          Toolbar: CustomToolbar,
+          LoadingOverlay: LinearProgress,
+        }}
+        pageSize={10}
+        rowsPerPageOptions={[10]}
+        checkboxSelection
+        loading={loading}
+      />
+      <Snackbar
+        open={showError}
+        autoHideDuration={4000}
+        onClose={handleErrorClose}
+        message={errorMessage}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      />
+    </>
   );
 }

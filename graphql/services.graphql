@@ -1,19 +1,20 @@
 query GetAllService {
   getAllService {
     _id
-    serviceCategory
+    mainCategory
+    subCategory
     serviceName
     subService
-    subSubService
+    subService2
     for
     description
     estimatedTime
     price
-    inputLimit
-    fileFormat
-    deliveryFormat
+    inputTrackLimit
+    uploadFileFormat
+    deliveryFileFormat
     deliveryDays
-    maxDuration
+    maxFileDuration
     numberOfReferenceFileUploads
     setOfRevisions
     revisionsDelivery
@@ -30,6 +31,6 @@ query GetAllService {
   }
 }
 
-mutation AddService($input: ServicesInput!) {
+mutation AddService($input: [ServicesInput!]!) {
   addService(input: $input)
 }

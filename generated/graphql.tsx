@@ -19,12 +19,12 @@ export type Scalars = {
 export type AddOn = {
   __typename?: 'AddOn';
   type: Scalars['String'];
-  value: Scalars['Float'];
+  value?: Maybe<Scalars['Float']>;
 };
 
 export type AddOnInput = {
   type: Scalars['String'];
-  value: Scalars['Float'];
+  value?: InputMaybe<Scalars['Float']>;
 };
 
 export type Mutation = {
@@ -34,13 +34,38 @@ export type Mutation = {
 
 
 export type MutationAddServiceArgs = {
-  input: ServicesInput;
+  input: Array<ServicesInput>;
 };
 
 export type Query = {
   __typename?: 'Query';
   getAllService: Array<Services>;
-  testQuery: Scalars['Boolean'];
+  getServiceDetails: Array<Services>;
+  login: Scalars['Boolean'];
+  logout: Scalars['Boolean'];
+  me: User;
+  register: Scalars['Boolean'];
+};
+
+
+export type QueryGetServiceDetailsArgs = {
+  input: ServicesDetailInput;
+};
+
+
+export type QueryLoginArgs = {
+  email: Scalars['String'];
+  password: Scalars['String'];
+  token?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryRegisterArgs = {
+  email: Scalars['String'];
+  name: Scalars['String'];
+  number: Scalars['String'];
+  password: Scalars['String'];
+  token?: InputMaybe<Scalars['String']>;
 };
 
 export type Services = {
@@ -48,60 +73,120 @@ export type Services = {
   _id: Scalars['ID'];
   addOn: Array<AddOn>;
   createdAt: Scalars['DateTime'];
-  deliveryDays: Scalars['Float'];
-  deliveryFormat: Scalars['String'];
-  description: Scalars['String'];
-  estimatedTime: Scalars['Float'];
-  fileFormat: Scalars['String'];
-  for: Scalars['String'];
-  inputLimit: Scalars['Float'];
-  maxDuration: Scalars['Float'];
-  mixProcessingDelays: Scalars['String'];
-  mixProcessingOtherFx: Scalars['String'];
-  mixProcessingReverbs: Scalars['String'];
-  mixVocalTuning: Scalars['String'];
-  numberOfReferenceFileUploads: Scalars['Float'];
+  deliveryDays?: Maybe<Scalars['Float']>;
+  /** File formats for delivery file */
+  deliveryFileFormat: Array<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
+  estimatedTime?: Maybe<Scalars['Float']>;
+  for?: Maybe<Scalars['String']>;
+  inputTrackLimit?: Maybe<Scalars['Float']>;
+  mainCategory: Scalars['String'];
+  maxFileDuration?: Maybe<Scalars['Float']>;
+  mixProcessingDelays?: Maybe<Scalars['String']>;
+  mixProcessingOtherFx?: Maybe<Scalars['String']>;
+  mixProcessingReverbs?: Maybe<Scalars['String']>;
+  mixVocalTuning?: Maybe<Scalars['String']>;
+  numberOfReferenceFileUploads?: Maybe<Scalars['Float']>;
   price: Scalars['Float'];
-  revisionsDelivery: Scalars['Float'];
-  serviceCategory: Scalars['String'];
+  revisionsDelivery?: Maybe<Scalars['Float']>;
   serviceName: Scalars['String'];
-  setOfRevisions: Scalars['Float'];
-  subService: Scalars['String'];
-  subSubService: Scalars['String'];
+  setOfRevisions?: Maybe<Scalars['Float']>;
+  subCategory: Scalars['String'];
+  subService?: Maybe<Scalars['String']>;
+  subService2?: Maybe<Scalars['String']>;
   updatedAt: Scalars['DateTime'];
+  /** File formats for uploading file */
+  uploadFileFormat: Array<Scalars['String']>;
+};
+
+export type ServicesDetailInput = {
+  mainCategory: Scalars['String'];
+  serviceName: Scalars['String'];
+  subCategory: Scalars['String'];
+  subService?: InputMaybe<Scalars['String']>;
 };
 
 export type ServicesInput = {
   addOn: Array<AddOnInput>;
-  deliveryDays: Scalars['Float'];
-  deliveryFormat: Scalars['String'];
-  description: Scalars['String'];
-  estimatedTime: Scalars['Float'];
-  fileFormat: Scalars['String'];
-  for: Scalars['String'];
-  inputLimit: Scalars['Float'];
-  maxDuration: Scalars['Float'];
-  mixProcessingDelays: Scalars['String'];
-  mixProcessingOtherFx: Scalars['String'];
-  mixProcessingReverbs: Scalars['String'];
-  mixVocalTuning: Scalars['String'];
-  numberOfReferenceFileUploads: Scalars['Float'];
+  deliveryDays?: InputMaybe<Scalars['Float']>;
+  /** File formats for delivery file */
+  deliveryFileFormat: Array<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  estimatedTime?: InputMaybe<Scalars['Float']>;
+  for?: InputMaybe<Scalars['String']>;
+  inputTrackLimit?: InputMaybe<Scalars['Float']>;
+  mainCategory: Scalars['String'];
+  maxFileDuration?: InputMaybe<Scalars['Float']>;
+  mixProcessingDelays?: InputMaybe<Scalars['String']>;
+  mixProcessingOtherFx?: InputMaybe<Scalars['String']>;
+  mixProcessingReverbs?: InputMaybe<Scalars['String']>;
+  mixVocalTuning?: InputMaybe<Scalars['String']>;
+  numberOfReferenceFileUploads?: InputMaybe<Scalars['Float']>;
   price: Scalars['Float'];
-  revisionsDelivery: Scalars['Float'];
-  serviceCategory: Scalars['String'];
+  revisionsDelivery?: InputMaybe<Scalars['Float']>;
   serviceName: Scalars['String'];
-  setOfRevisions: Scalars['Float'];
-  subService: Scalars['String'];
-  subSubService: Scalars['String'];
+  setOfRevisions?: InputMaybe<Scalars['Float']>;
+  subCategory: Scalars['String'];
+  subService?: InputMaybe<Scalars['String']>;
+  subService2?: InputMaybe<Scalars['String']>;
+  /** File formats for uploading file */
+  uploadFileFormat: Array<Scalars['String']>;
+};
+
+export type User = {
+  __typename?: 'User';
+  _id: Scalars['ID'];
+  accountVerified: Scalars['Boolean'];
+  createdAt: Scalars['DateTime'];
+  email: Scalars['String'];
+  lastLoggedIn?: Maybe<Scalars['DateTime']>;
+  lastLoggedOut?: Maybe<Scalars['DateTime']>;
+  name: Scalars['String'];
+  number: Scalars['String'];
+  services: Array<UserServices>;
+  updatedAt: Scalars['DateTime'];
+};
+
+export type UserServices = {
+  __typename?: 'UserServices';
+  _id: Scalars['ID'];
+  addOn: Array<AddOn>;
+  createdAt: Scalars['DateTime'];
+  deliveryDays?: Maybe<Scalars['Float']>;
+  /** File formats for delivery file */
+  deliveryFileFormat: Array<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
+  estimatedTime?: Maybe<Scalars['Float']>;
+  for?: Maybe<Scalars['String']>;
+  inputTrackLimit?: Maybe<Scalars['Float']>;
+  mainCategory: Scalars['String'];
+  maxFileDuration?: Maybe<Scalars['Float']>;
+  mixProcessingDelays?: Maybe<Scalars['String']>;
+  mixProcessingOtherFx?: Maybe<Scalars['String']>;
+  mixProcessingReverbs?: Maybe<Scalars['String']>;
+  mixVocalTuning?: Maybe<Scalars['String']>;
+  numberOfReferenceFileUploads?: Maybe<Scalars['Float']>;
+  paid: Scalars['Boolean'];
+  price: Scalars['Float'];
+  projectName?: Maybe<Scalars['String']>;
+  revisionsDelivery?: Maybe<Scalars['Float']>;
+  serviceName: Scalars['String'];
+  setOfRevisions?: Maybe<Scalars['Float']>;
+  subCategory: Scalars['String'];
+  subService?: Maybe<Scalars['String']>;
+  subService2?: Maybe<Scalars['String']>;
+  updatedAt: Scalars['DateTime'];
+  /** File formats for uploading file */
+  uploadFileFormat: Array<Scalars['String']>;
 };
 
 export type GetAllServiceQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAllServiceQuery = { __typename?: 'Query', getAllService: Array<{ __typename?: 'Services', _id: string, serviceCategory: string, serviceName: string, subService: string, subSubService: string, for: string, description: string, estimatedTime: number, price: number, inputLimit: number, fileFormat: string, deliveryFormat: string, deliveryDays: number, maxDuration: number, numberOfReferenceFileUploads: number, setOfRevisions: number, revisionsDelivery: number, mixVocalTuning: string, mixProcessingReverbs: string, mixProcessingDelays: string, mixProcessingOtherFx: string, createdAt: any, updatedAt: any, addOn: Array<{ __typename?: 'AddOn', type: string, value: number }> }> };
+export type GetAllServiceQuery = { __typename?: 'Query', getAllService: Array<{ __typename?: 'Services', _id: string, mainCategory: string, subCategory: string, serviceName: string, subService?: string | null, subService2?: string | null, for?: string | null, description?: string | null, estimatedTime?: number | null, price: number, inputTrackLimit?: number | null, uploadFileFormat: Array<string>, deliveryFileFormat: Array<string>, deliveryDays?: number | null, maxFileDuration?: number | null, numberOfReferenceFileUploads?: number | null, setOfRevisions?: number | null, revisionsDelivery?: number | null, mixVocalTuning?: string | null, mixProcessingReverbs?: string | null, mixProcessingDelays?: string | null, mixProcessingOtherFx?: string | null, createdAt: any, updatedAt: any, addOn: Array<{ __typename?: 'AddOn', type: string, value?: number | null }> }> };
 
 export type AddServiceMutationVariables = Exact<{
-  input: ServicesInput;
+  input: Array<ServicesInput> | ServicesInput;
 }>;
 
 
@@ -112,19 +197,20 @@ export const GetAllServiceDocument = gql`
     query GetAllService {
   getAllService {
     _id
-    serviceCategory
+    mainCategory
+    subCategory
     serviceName
     subService
-    subSubService
+    subService2
     for
     description
     estimatedTime
     price
-    inputLimit
-    fileFormat
-    deliveryFormat
+    inputTrackLimit
+    uploadFileFormat
+    deliveryFileFormat
     deliveryDays
-    maxDuration
+    maxFileDuration
     numberOfReferenceFileUploads
     setOfRevisions
     revisionsDelivery
@@ -169,7 +255,7 @@ export type GetAllServiceQueryHookResult = ReturnType<typeof useGetAllServiceQue
 export type GetAllServiceLazyQueryHookResult = ReturnType<typeof useGetAllServiceLazyQuery>;
 export type GetAllServiceQueryResult = Apollo.QueryResult<GetAllServiceQuery, GetAllServiceQueryVariables>;
 export const AddServiceDocument = gql`
-    mutation AddService($input: ServicesInput!) {
+    mutation AddService($input: [ServicesInput!]!) {
   addService(input: $input)
 }
     `;
