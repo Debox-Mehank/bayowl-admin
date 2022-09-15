@@ -1,17 +1,21 @@
 import type { NextPage } from "next";
-import Head from "next/head";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import Layout from "../components/layout/layout";
-import Services from "../components/services/services";
-import Dashboard from "../components/services/services";
-import styles from "../styles/Home.module.css";
+import Login from "../components/login/login";
+import { useMeAdminLazyQuery } from "../generated/graphql";
 
 const Home: NextPage = () => {
-  return (
-    <Layout>
-      <Services />
-    </Layout>
-  );
+  const [meAdmin] = useMeAdminLazyQuery();
+  const [pageDecider, setPageDecider] = useState<string>("");
+  useEffect(() => {
+    const useQuery = async () => {
+      const response = await meAdmin();
+      setPageDecider(response.data!.meAdmin);
+    };
+    useQuery();
+  }, []);
+  if (pageDecider === "false" || !pageDecider) return <Login />;
+  else return <Layout />;
 };
 
 export default Home;

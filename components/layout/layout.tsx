@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useState } from "react";
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import MuiDrawer from "@mui/material/Drawer";
@@ -9,14 +9,14 @@ import List from "@mui/material/List";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import Badge from "@mui/material/Badge";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import Paper from "@mui/material/Paper";
-import Link from "@mui/material/Link";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import MenuIcon from "@mui/icons-material/Menu";
-import { mainListItems } from "./listitems";
+import { MainListItems } from "./listitems";
+import Service from "../services/services";
+import { ListOfService } from "./interface";
+import UAM from "../uam/uam";
+import Payments from "../payments/payments";
+import TAM from "../tam/tam";
 
 const drawerWidth: number = 240;
 
@@ -24,6 +24,12 @@ interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
 }
 
+const sideMenuItem: ListOfService[] = [
+  ListOfService.Services,
+  ListOfService.UAM,
+  ListOfService.Payments,
+  ListOfService.TAM,
+];
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })<AppBarProps>(({ theme, open }) => ({
@@ -70,11 +76,27 @@ const Drawer = styled(MuiDrawer, {
 
 const mdTheme = createTheme();
 
-function Layout({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = React.useState(true);
+function Layout() {
+  const [open, setOpen] = useState<boolean>(true);
+  const [currentService, setCurrentService] = useState<ListOfService>(
+    ListOfService.Services
+  );
   const toggleDrawer = () => {
     setOpen(!open);
   };
+
+  function renderSwitch(param: ListOfService) {
+    switch (param) {
+      case ListOfService.Services:
+        return <Service />;
+      case ListOfService.UAM:
+        return <UAM />;
+      case ListOfService.Payments:
+        return <Payments />;
+      case ListOfService.TAM:
+        return <TAM />;
+    }
+  }
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -122,7 +144,15 @@ function Layout({ children }: { children: React.ReactNode }) {
           </IconButton>
         </Toolbar>
         <Divider />
-        <List component="nav">{mainListItems}</List>
+        <List component="nav">
+          {sideMenuItem.map((ind: ListOfService) => (
+            <MainListItems
+              name={ind}
+              key={ind}
+              changeService={(ser: ListOfService) => setCurrentService(ser)}
+            />
+          ))}
+        </List>
       </Drawer>
       <Box
         component="main"
@@ -138,7 +168,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       >
         <Toolbar />
         <Box p={2} height={"91%"}>
-          {children}
+          {renderSwitch(currentService)}
         </Box>
       </Box>
     </Box>

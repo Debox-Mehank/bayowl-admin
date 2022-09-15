@@ -1,19 +1,20 @@
 query GetAllService {
   getAllService {
     _id
-    serviceCategory
+    mainCategory
+    subCategory
     serviceName
     subService
-    subSubService
+    subService2
     for
     description
     estimatedTime
     price
-    inputLimit
-    fileFormat
-    deliveryFormat
+    inputTrackLimit
+    uploadFileFormat
+    deliveryFileFormat
     deliveryDays
-    maxDuration
+    maxFileDuration
     numberOfReferenceFileUploads
     setOfRevisions
     revisionsDelivery
@@ -24,12 +25,100 @@ query GetAllService {
     addOn {
       type
       value
+      qty
     }
     createdAt
     updatedAt
   }
 }
 
-mutation AddService($input: ServicesInput!) {
+query GetAllUser {
+  getAllUser {
+    _id
+    name
+    email
+    number
+    services {
+      mainCategory
+      subCategory
+      serviceName
+      subService
+      subService2
+      uploadedFiles
+      referenceFiles
+      statusType
+      _id
+      addOn {
+        type
+        value
+        qty
+      }
+      deliveryFileFormat
+      # createdAt
+      # updatedAt
+      uploadFileFormat
+      paid
+      price
+      revisionFiles {
+        file
+        description
+        revision
+      }
+      status {
+        name
+        state
+      }
+    }
+    lastLoggedIn
+    lastLoggedOut
+    accountVerified
+    createdAt
+    updatedAt
+  }
+}
+
+query GetAllPayment {
+  getAllPayment {
+    _id
+    email
+    orderId
+    paymentId
+    paymentLinkId
+    signature
+    userServiceId
+    amount
+    status
+    createdAt
+    updatedAt
+  }
+}
+
+query AllAdmins {
+  allAdmins {
+    _id
+    name
+    email
+    type
+    createdBy {
+      name
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+query AdminLogin($input: AdminLoginInput!) {
+  adminLogin(input: $input)
+}
+
+query MeAdmin {
+  meAdmin
+}
+
+mutation AddAdmin($input: AdminRegisterInput!) {
+  addUser(input: $input)
+}
+
+mutation AddService($input: [ServicesInput!]!) {
   addService(input: $input)
 }

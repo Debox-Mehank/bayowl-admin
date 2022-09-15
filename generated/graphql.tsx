@@ -18,90 +18,391 @@ export type Scalars = {
 
 export type AddOn = {
   __typename?: 'AddOn';
+  qty?: Maybe<Scalars['Float']>;
   type: Scalars['String'];
-  value: Scalars['Float'];
+  value?: Maybe<Scalars['Float']>;
 };
 
 export type AddOnInput = {
+  qty?: InputMaybe<Scalars['Float']>;
   type: Scalars['String'];
-  value: Scalars['Float'];
+  value?: InputMaybe<Scalars['Float']>;
 };
+
+export type Admin = {
+  __typename?: 'Admin';
+  _id: Scalars['ID'];
+  createdAt: Scalars['DateTime'];
+  createdBy: Admin;
+  email: Scalars['String'];
+  name: Scalars['String'];
+  type: AdminRole;
+  updatedAt: Scalars['DateTime'];
+};
+
+export type AdminLoginInput = {
+  email: Scalars['String'];
+  password: Scalars['String'];
+};
+
+export type AdminRegisterInput = {
+  email: Scalars['String'];
+  name: Scalars['String'];
+  password: Scalars['String'];
+  type: AdminRole;
+};
+
+/** Enum For Type of Admin Roles i.e. Master, Admin & Normal */
+export enum AdminRole {
+  Employee = 'employee',
+  Manager = 'manager',
+  Master = 'master'
+}
 
 export type Mutation = {
   __typename?: 'Mutation';
   addService: Scalars['Boolean'];
+  addUser: Scalars['String'];
 };
 
 
 export type MutationAddServiceArgs = {
-  input: ServicesInput;
+  input: Array<ServicesInput>;
+};
+
+
+export type MutationAddUserArgs = {
+  input: AdminRegisterInput;
+};
+
+export type Payment = {
+  __typename?: 'Payment';
+  _id: Scalars['ID'];
+  amount: Scalars['Float'];
+  createdAt: Scalars['DateTime'];
+  email: Scalars['String'];
+  orderId?: Maybe<Scalars['String']>;
+  paymentId?: Maybe<Scalars['String']>;
+  paymentLinkId?: Maybe<Scalars['String']>;
+  signature?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
+  updatedAt: Scalars['DateTime'];
+  userServiceId?: Maybe<Scalars['String']>;
 };
 
 export type Query = {
   __typename?: 'Query';
+  addUserService: Scalars['Boolean'];
+  adminLogin: Scalars['String'];
+  adminLogout: Scalars['Boolean'];
+  allAdmins: Array<Admin>;
+  completeAccount: Scalars['Boolean'];
+  getAllPayment: Array<Payment>;
   getAllService: Array<Services>;
-  testQuery: Scalars['Boolean'];
+  getAllUser: Array<User>;
+  getS3SignedURL: Scalars['String'];
+  getServiceDetails: Array<Services>;
+  getUserServiceDetailsById?: Maybe<UserServices>;
+  initiatePayment: Scalars['String'];
+  login: Scalars['Boolean'];
+  logout: Scalars['Boolean'];
+  me: User;
+  meAdmin: Scalars['String'];
+  register: Scalars['Boolean'];
+  updatePorjectName: Scalars['Boolean'];
+  uploadFilesForService: Scalars['Boolean'];
+  verifyUser: Scalars['Boolean'];
 };
+
+
+export type QueryAddUserServiceArgs = {
+  input: UserServicesInput;
+};
+
+
+export type QueryAdminLoginArgs = {
+  input: AdminLoginInput;
+};
+
+
+export type QueryCompleteAccountArgs = {
+  email: Scalars['String'];
+  name: Scalars['String'];
+  number: Scalars['String'];
+  password: Scalars['String'];
+  token: Scalars['String'];
+};
+
+
+export type QueryGetServiceDetailsArgs = {
+  input: ServicesDetailInput;
+};
+
+
+export type QueryGetUserServiceDetailsByIdArgs = {
+  serviceId: Scalars['String'];
+};
+
+
+export type QueryInitiatePaymentArgs = {
+  email?: InputMaybe<Scalars['String']>;
+  service: UserServicesInput;
+};
+
+
+export type QueryLoginArgs = {
+  email: Scalars['String'];
+  password: Scalars['String'];
+  token?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryRegisterArgs = {
+  email: Scalars['String'];
+  name: Scalars['String'];
+  number: Scalars['String'];
+  password: Scalars['String'];
+  token?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryUpdatePorjectNameArgs = {
+  projectName: Scalars['String'];
+  serviceId: Scalars['String'];
+};
+
+
+export type QueryUploadFilesForServiceArgs = {
+  referenceUploadedFiles: Array<Scalars['String']>;
+  serviceId: Scalars['String'];
+  uplodedFiles: Array<Scalars['String']>;
+};
+
+
+export type QueryVerifyUserArgs = {
+  token: Scalars['String'];
+};
+
+export type RevisionFiles = {
+  __typename?: 'RevisionFiles';
+  description?: Maybe<Scalars['String']>;
+  file?: Maybe<Scalars['String']>;
+  revision: Scalars['Float'];
+};
+
+export type ServiceStatusObject = {
+  __typename?: 'ServiceStatusObject';
+  name?: Maybe<UserServiceStatus>;
+  state: ServiceStatusObjectState;
+};
+
+/** Enum for state */
+export enum ServiceStatusObjectState {
+  Completed = 'completed',
+  Current = 'current',
+  Pending = 'pending'
+}
 
 export type Services = {
   __typename?: 'Services';
   _id: Scalars['ID'];
   addOn: Array<AddOn>;
-  createdAt: Scalars['DateTime'];
-  deliveryDays: Scalars['Float'];
-  deliveryFormat: Scalars['String'];
-  description: Scalars['String'];
-  estimatedTime: Scalars['Float'];
-  fileFormat: Scalars['String'];
-  for: Scalars['String'];
-  inputLimit: Scalars['Float'];
-  maxDuration: Scalars['Float'];
-  mixProcessingDelays: Scalars['String'];
-  mixProcessingOtherFx: Scalars['String'];
-  mixProcessingReverbs: Scalars['String'];
-  mixVocalTuning: Scalars['String'];
-  numberOfReferenceFileUploads: Scalars['Float'];
+  createdAt?: Maybe<Scalars['DateTime']>;
+  deliveryDays?: Maybe<Scalars['Float']>;
+  /** File formats for delivery file */
+  deliveryFileFormat: Array<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
+  estimatedTime?: Maybe<Scalars['Float']>;
+  for?: Maybe<Scalars['String']>;
+  inputTrackLimit?: Maybe<Scalars['Float']>;
+  mainCategory: Scalars['String'];
+  maxFileDuration?: Maybe<Scalars['Float']>;
+  mixProcessingDelays?: Maybe<Scalars['String']>;
+  mixProcessingOtherFx?: Maybe<Scalars['String']>;
+  mixProcessingReverbs?: Maybe<Scalars['String']>;
+  mixVocalTuning?: Maybe<Scalars['String']>;
+  numberOfReferenceFileUploads?: Maybe<Scalars['Float']>;
   price: Scalars['Float'];
-  revisionsDelivery: Scalars['Float'];
-  serviceCategory: Scalars['String'];
+  revisionsDelivery?: Maybe<Scalars['Float']>;
   serviceName: Scalars['String'];
-  setOfRevisions: Scalars['Float'];
-  subService: Scalars['String'];
-  subSubService: Scalars['String'];
-  updatedAt: Scalars['DateTime'];
+  setOfRevisions?: Maybe<Scalars['Float']>;
+  subCategory: Scalars['String'];
+  subService?: Maybe<Scalars['String']>;
+  subService2?: Maybe<Scalars['String']>;
+  updatedAt?: Maybe<Scalars['DateTime']>;
+  /** File formats for uploading file */
+  uploadFileFormat: Array<Scalars['String']>;
+};
+
+export type ServicesDetailInput = {
+  mainCategory: Scalars['String'];
+  serviceName: Scalars['String'];
+  subCategory: Scalars['String'];
+  subService?: InputMaybe<Scalars['String']>;
 };
 
 export type ServicesInput = {
   addOn: Array<AddOnInput>;
-  deliveryDays: Scalars['Float'];
-  deliveryFormat: Scalars['String'];
-  description: Scalars['String'];
-  estimatedTime: Scalars['Float'];
-  fileFormat: Scalars['String'];
-  for: Scalars['String'];
-  inputLimit: Scalars['Float'];
-  maxDuration: Scalars['Float'];
-  mixProcessingDelays: Scalars['String'];
-  mixProcessingOtherFx: Scalars['String'];
-  mixProcessingReverbs: Scalars['String'];
-  mixVocalTuning: Scalars['String'];
-  numberOfReferenceFileUploads: Scalars['Float'];
+  deliveryDays?: InputMaybe<Scalars['Float']>;
+  /** File formats for delivery file */
+  deliveryFileFormat: Array<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  estimatedTime?: InputMaybe<Scalars['Float']>;
+  for?: InputMaybe<Scalars['String']>;
+  inputTrackLimit?: InputMaybe<Scalars['Float']>;
+  mainCategory: Scalars['String'];
+  maxFileDuration?: InputMaybe<Scalars['Float']>;
+  mixProcessingDelays?: InputMaybe<Scalars['String']>;
+  mixProcessingOtherFx?: InputMaybe<Scalars['String']>;
+  mixProcessingReverbs?: InputMaybe<Scalars['String']>;
+  mixVocalTuning?: InputMaybe<Scalars['String']>;
+  numberOfReferenceFileUploads?: InputMaybe<Scalars['Float']>;
   price: Scalars['Float'];
-  revisionsDelivery: Scalars['Float'];
-  serviceCategory: Scalars['String'];
+  revisionsDelivery?: InputMaybe<Scalars['Float']>;
   serviceName: Scalars['String'];
-  setOfRevisions: Scalars['Float'];
-  subService: Scalars['String'];
-  subSubService: Scalars['String'];
+  setOfRevisions?: InputMaybe<Scalars['Float']>;
+  subCategory: Scalars['String'];
+  subService?: InputMaybe<Scalars['String']>;
+  subService2?: InputMaybe<Scalars['String']>;
+  /** File formats for uploading file */
+  uploadFileFormat: Array<Scalars['String']>;
+};
+
+export type User = {
+  __typename?: 'User';
+  _id: Scalars['ID'];
+  accountVerified: Scalars['Boolean'];
+  createdAt: Scalars['DateTime'];
+  email: Scalars['String'];
+  lastLoggedIn?: Maybe<Scalars['DateTime']>;
+  lastLoggedOut?: Maybe<Scalars['DateTime']>;
+  name?: Maybe<Scalars['String']>;
+  number?: Maybe<Scalars['String']>;
+  services: Array<UserServices>;
+  updatedAt: Scalars['DateTime'];
+};
+
+/** Enum for status of user service */
+export enum UserServiceStatus {
+  Completed = 'completed',
+  Delivered = 'delivered',
+  Pendingupload = 'pendingupload',
+  Revisiondelivered = 'revisiondelivered',
+  Revisionrequest = 'revisionrequest',
+  Underreview = 'underreview',
+  Workinprogress = 'workinprogress'
+}
+
+export type UserServices = {
+  __typename?: 'UserServices';
+  _id: Scalars['ID'];
+  addOn: Array<AddOn>;
+  assignedBy?: Maybe<Admin>;
+  assignedTo?: Maybe<Admin>;
+  createdAt?: Maybe<Scalars['DateTime']>;
+  deliveryDays?: Maybe<Scalars['Float']>;
+  /** File formats for delivery file */
+  deliveryFileFormat: Array<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
+  estimatedTime?: Maybe<Scalars['Float']>;
+  for?: Maybe<Scalars['String']>;
+  inputTrackLimit?: Maybe<Scalars['Float']>;
+  mainCategory: Scalars['String'];
+  maxFileDuration?: Maybe<Scalars['Float']>;
+  mixProcessingDelays?: Maybe<Scalars['String']>;
+  mixProcessingOtherFx?: Maybe<Scalars['String']>;
+  mixProcessingReverbs?: Maybe<Scalars['String']>;
+  mixVocalTuning?: Maybe<Scalars['String']>;
+  numberOfReferenceFileUploads?: Maybe<Scalars['Float']>;
+  paid: Scalars['Boolean'];
+  price: Scalars['Float'];
+  projectName?: Maybe<Scalars['String']>;
+  referenceFiles: Array<Scalars['String']>;
+  reupload?: Maybe<Scalars['DateTime']>;
+  revisionFiles: Array<RevisionFiles>;
+  revisionsDelivery?: Maybe<Scalars['Float']>;
+  serviceName: Scalars['String'];
+  setOfRevisions?: Maybe<Scalars['Float']>;
+  status: Array<ServiceStatusObject>;
+  statusType: UserServiceStatus;
+  subCategory: Scalars['String'];
+  subService?: Maybe<Scalars['String']>;
+  subService2?: Maybe<Scalars['String']>;
+  updatedAt?: Maybe<Scalars['DateTime']>;
+  /** File formats for uploading file */
+  uploadFileFormat: Array<Scalars['String']>;
+  uploadedFiles: Array<Scalars['String']>;
+};
+
+export type UserServicesInput = {
+  addOn: Array<AddOnInput>;
+  deliveryDays?: InputMaybe<Scalars['Float']>;
+  /** File formats for delivery file */
+  deliveryFileFormat: Array<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  estimatedTime?: InputMaybe<Scalars['Float']>;
+  for?: InputMaybe<Scalars['String']>;
+  inputTrackLimit?: InputMaybe<Scalars['Float']>;
+  mainCategory: Scalars['String'];
+  maxFileDuration?: InputMaybe<Scalars['Float']>;
+  mixProcessingDelays?: InputMaybe<Scalars['String']>;
+  mixProcessingOtherFx?: InputMaybe<Scalars['String']>;
+  mixProcessingReverbs?: InputMaybe<Scalars['String']>;
+  mixVocalTuning?: InputMaybe<Scalars['String']>;
+  numberOfReferenceFileUploads?: InputMaybe<Scalars['Float']>;
+  price: Scalars['Float'];
+  projectName?: InputMaybe<Scalars['String']>;
+  revisionsDelivery?: InputMaybe<Scalars['Float']>;
+  serviceName: Scalars['String'];
+  setOfRevisions?: InputMaybe<Scalars['Float']>;
+  subCategory: Scalars['String'];
+  subService?: InputMaybe<Scalars['String']>;
+  subService2?: InputMaybe<Scalars['String']>;
+  /** File formats for uploading file */
+  uploadFileFormat: Array<Scalars['String']>;
 };
 
 export type GetAllServiceQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAllServiceQuery = { __typename?: 'Query', getAllService: Array<{ __typename?: 'Services', _id: string, serviceCategory: string, serviceName: string, subService: string, subSubService: string, for: string, description: string, estimatedTime: number, price: number, inputLimit: number, fileFormat: string, deliveryFormat: string, deliveryDays: number, maxDuration: number, numberOfReferenceFileUploads: number, setOfRevisions: number, revisionsDelivery: number, mixVocalTuning: string, mixProcessingReverbs: string, mixProcessingDelays: string, mixProcessingOtherFx: string, createdAt: any, updatedAt: any, addOn: Array<{ __typename?: 'AddOn', type: string, value: number }> }> };
+export type GetAllServiceQuery = { __typename?: 'Query', getAllService: Array<{ __typename?: 'Services', _id: string, mainCategory: string, subCategory: string, serviceName: string, subService?: string | null, subService2?: string | null, for?: string | null, description?: string | null, estimatedTime?: number | null, price: number, inputTrackLimit?: number | null, uploadFileFormat: Array<string>, deliveryFileFormat: Array<string>, deliveryDays?: number | null, maxFileDuration?: number | null, numberOfReferenceFileUploads?: number | null, setOfRevisions?: number | null, revisionsDelivery?: number | null, mixVocalTuning?: string | null, mixProcessingReverbs?: string | null, mixProcessingDelays?: string | null, mixProcessingOtherFx?: string | null, createdAt?: any | null, updatedAt?: any | null, addOn: Array<{ __typename?: 'AddOn', type: string, value?: number | null, qty?: number | null }> }> };
+
+export type GetAllUserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAllUserQuery = { __typename?: 'Query', getAllUser: Array<{ __typename?: 'User', _id: string, name?: string | null, email: string, number?: string | null, lastLoggedIn?: any | null, lastLoggedOut?: any | null, accountVerified: boolean, createdAt: any, updatedAt: any, services: Array<{ __typename?: 'UserServices', mainCategory: string, subCategory: string, serviceName: string, subService?: string | null, subService2?: string | null, uploadedFiles: Array<string>, referenceFiles: Array<string>, statusType: UserServiceStatus, _id: string, deliveryFileFormat: Array<string>, uploadFileFormat: Array<string>, paid: boolean, price: number, addOn: Array<{ __typename?: 'AddOn', type: string, value?: number | null, qty?: number | null }>, revisionFiles: Array<{ __typename?: 'RevisionFiles', file?: string | null, description?: string | null, revision: number }>, status: Array<{ __typename?: 'ServiceStatusObject', name?: UserServiceStatus | null, state: ServiceStatusObjectState }> }> }> };
+
+export type GetAllPaymentQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAllPaymentQuery = { __typename?: 'Query', getAllPayment: Array<{ __typename?: 'Payment', _id: string, email: string, orderId?: string | null, paymentId?: string | null, paymentLinkId?: string | null, signature?: string | null, userServiceId?: string | null, amount: number, status?: string | null, createdAt: any, updatedAt: any }> };
+
+export type AllAdminsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AllAdminsQuery = { __typename?: 'Query', allAdmins: Array<{ __typename?: 'Admin', _id: string, name: string, email: string, type: AdminRole, createdAt: any, updatedAt: any, createdBy: { __typename?: 'Admin', name: string } }> };
+
+export type AdminLoginQueryVariables = Exact<{
+  input: AdminLoginInput;
+}>;
+
+
+export type AdminLoginQuery = { __typename?: 'Query', adminLogin: string };
+
+export type MeAdminQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MeAdminQuery = { __typename?: 'Query', meAdmin: string };
+
+export type AddAdminMutationVariables = Exact<{
+  input: AdminRegisterInput;
+}>;
+
+
+export type AddAdminMutation = { __typename?: 'Mutation', addUser: string };
 
 export type AddServiceMutationVariables = Exact<{
-  input: ServicesInput;
+  input: Array<ServicesInput> | ServicesInput;
 }>;
 
 
@@ -112,19 +413,20 @@ export const GetAllServiceDocument = gql`
     query GetAllService {
   getAllService {
     _id
-    serviceCategory
+    mainCategory
+    subCategory
     serviceName
     subService
-    subSubService
+    subService2
     for
     description
     estimatedTime
     price
-    inputLimit
-    fileFormat
-    deliveryFormat
+    inputTrackLimit
+    uploadFileFormat
+    deliveryFileFormat
     deliveryDays
-    maxDuration
+    maxFileDuration
     numberOfReferenceFileUploads
     setOfRevisions
     revisionsDelivery
@@ -135,6 +437,7 @@ export const GetAllServiceDocument = gql`
     addOn {
       type
       value
+      qty
     }
     createdAt
     updatedAt
@@ -168,8 +471,261 @@ export function useGetAllServiceLazyQuery(baseOptions?: Apollo.LazyQueryHookOpti
 export type GetAllServiceQueryHookResult = ReturnType<typeof useGetAllServiceQuery>;
 export type GetAllServiceLazyQueryHookResult = ReturnType<typeof useGetAllServiceLazyQuery>;
 export type GetAllServiceQueryResult = Apollo.QueryResult<GetAllServiceQuery, GetAllServiceQueryVariables>;
+export const GetAllUserDocument = gql`
+    query GetAllUser {
+  getAllUser {
+    _id
+    name
+    email
+    number
+    services {
+      mainCategory
+      subCategory
+      serviceName
+      subService
+      subService2
+      uploadedFiles
+      referenceFiles
+      statusType
+      _id
+      addOn {
+        type
+        value
+        qty
+      }
+      deliveryFileFormat
+      uploadFileFormat
+      paid
+      price
+      revisionFiles {
+        file
+        description
+        revision
+      }
+      status {
+        name
+        state
+      }
+    }
+    lastLoggedIn
+    lastLoggedOut
+    accountVerified
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useGetAllUserQuery__
+ *
+ * To run a query within a React component, call `useGetAllUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetAllUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetAllUserQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetAllUserQuery(baseOptions?: Apollo.QueryHookOptions<GetAllUserQuery, GetAllUserQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetAllUserQuery, GetAllUserQueryVariables>(GetAllUserDocument, options);
+      }
+export function useGetAllUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetAllUserQuery, GetAllUserQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetAllUserQuery, GetAllUserQueryVariables>(GetAllUserDocument, options);
+        }
+export type GetAllUserQueryHookResult = ReturnType<typeof useGetAllUserQuery>;
+export type GetAllUserLazyQueryHookResult = ReturnType<typeof useGetAllUserLazyQuery>;
+export type GetAllUserQueryResult = Apollo.QueryResult<GetAllUserQuery, GetAllUserQueryVariables>;
+export const GetAllPaymentDocument = gql`
+    query GetAllPayment {
+  getAllPayment {
+    _id
+    email
+    orderId
+    paymentId
+    paymentLinkId
+    signature
+    userServiceId
+    amount
+    status
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useGetAllPaymentQuery__
+ *
+ * To run a query within a React component, call `useGetAllPaymentQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetAllPaymentQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetAllPaymentQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetAllPaymentQuery(baseOptions?: Apollo.QueryHookOptions<GetAllPaymentQuery, GetAllPaymentQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetAllPaymentQuery, GetAllPaymentQueryVariables>(GetAllPaymentDocument, options);
+      }
+export function useGetAllPaymentLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetAllPaymentQuery, GetAllPaymentQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetAllPaymentQuery, GetAllPaymentQueryVariables>(GetAllPaymentDocument, options);
+        }
+export type GetAllPaymentQueryHookResult = ReturnType<typeof useGetAllPaymentQuery>;
+export type GetAllPaymentLazyQueryHookResult = ReturnType<typeof useGetAllPaymentLazyQuery>;
+export type GetAllPaymentQueryResult = Apollo.QueryResult<GetAllPaymentQuery, GetAllPaymentQueryVariables>;
+export const AllAdminsDocument = gql`
+    query AllAdmins {
+  allAdmins {
+    _id
+    name
+    email
+    type
+    createdBy {
+      name
+    }
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useAllAdminsQuery__
+ *
+ * To run a query within a React component, call `useAllAdminsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAllAdminsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAllAdminsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useAllAdminsQuery(baseOptions?: Apollo.QueryHookOptions<AllAdminsQuery, AllAdminsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AllAdminsQuery, AllAdminsQueryVariables>(AllAdminsDocument, options);
+      }
+export function useAllAdminsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AllAdminsQuery, AllAdminsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AllAdminsQuery, AllAdminsQueryVariables>(AllAdminsDocument, options);
+        }
+export type AllAdminsQueryHookResult = ReturnType<typeof useAllAdminsQuery>;
+export type AllAdminsLazyQueryHookResult = ReturnType<typeof useAllAdminsLazyQuery>;
+export type AllAdminsQueryResult = Apollo.QueryResult<AllAdminsQuery, AllAdminsQueryVariables>;
+export const AdminLoginDocument = gql`
+    query AdminLogin($input: AdminLoginInput!) {
+  adminLogin(input: $input)
+}
+    `;
+
+/**
+ * __useAdminLoginQuery__
+ *
+ * To run a query within a React component, call `useAdminLoginQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAdminLoginQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAdminLoginQuery({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useAdminLoginQuery(baseOptions: Apollo.QueryHookOptions<AdminLoginQuery, AdminLoginQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AdminLoginQuery, AdminLoginQueryVariables>(AdminLoginDocument, options);
+      }
+export function useAdminLoginLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AdminLoginQuery, AdminLoginQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AdminLoginQuery, AdminLoginQueryVariables>(AdminLoginDocument, options);
+        }
+export type AdminLoginQueryHookResult = ReturnType<typeof useAdminLoginQuery>;
+export type AdminLoginLazyQueryHookResult = ReturnType<typeof useAdminLoginLazyQuery>;
+export type AdminLoginQueryResult = Apollo.QueryResult<AdminLoginQuery, AdminLoginQueryVariables>;
+export const MeAdminDocument = gql`
+    query MeAdmin {
+  meAdmin
+}
+    `;
+
+/**
+ * __useMeAdminQuery__
+ *
+ * To run a query within a React component, call `useMeAdminQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMeAdminQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMeAdminQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMeAdminQuery(baseOptions?: Apollo.QueryHookOptions<MeAdminQuery, MeAdminQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MeAdminQuery, MeAdminQueryVariables>(MeAdminDocument, options);
+      }
+export function useMeAdminLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeAdminQuery, MeAdminQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MeAdminQuery, MeAdminQueryVariables>(MeAdminDocument, options);
+        }
+export type MeAdminQueryHookResult = ReturnType<typeof useMeAdminQuery>;
+export type MeAdminLazyQueryHookResult = ReturnType<typeof useMeAdminLazyQuery>;
+export type MeAdminQueryResult = Apollo.QueryResult<MeAdminQuery, MeAdminQueryVariables>;
+export const AddAdminDocument = gql`
+    mutation AddAdmin($input: AdminRegisterInput!) {
+  addUser(input: $input)
+}
+    `;
+export type AddAdminMutationFn = Apollo.MutationFunction<AddAdminMutation, AddAdminMutationVariables>;
+
+/**
+ * __useAddAdminMutation__
+ *
+ * To run a mutation, you first call `useAddAdminMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddAdminMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addAdminMutation, { data, loading, error }] = useAddAdminMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useAddAdminMutation(baseOptions?: Apollo.MutationHookOptions<AddAdminMutation, AddAdminMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddAdminMutation, AddAdminMutationVariables>(AddAdminDocument, options);
+      }
+export type AddAdminMutationHookResult = ReturnType<typeof useAddAdminMutation>;
+export type AddAdminMutationResult = Apollo.MutationResult<AddAdminMutation>;
+export type AddAdminMutationOptions = Apollo.BaseMutationOptions<AddAdminMutation, AddAdminMutationVariables>;
 export const AddServiceDocument = gql`
-    mutation AddService($input: ServicesInput!) {
+    mutation AddService($input: [ServicesInput!]!) {
   addService(input: $input)
 }
     `;

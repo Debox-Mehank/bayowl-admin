@@ -1,9 +1,4 @@
-import {
-  Button,
-  CircularProgress,
-  LinearProgress,
-  Toolbar,
-} from "@mui/material";
+import { Button, LinearProgress } from "@mui/material";
 import {
   DataGrid,
   GridColDef,
@@ -16,7 +11,6 @@ import {
   Services,
   useAddServiceMutation,
   useGetAllServiceLazyQuery,
-  useGetAllServiceQuery,
 } from "../../generated/graphql";
 import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
 import { parse, ParseStepResult } from "papaparse";
@@ -84,10 +78,10 @@ export default function Service() {
   }, []);
   const [addService] = useAddServiceMutation();
   const [columns, setColumns] = useState<GridColDef[]>([
-    { field: "serviceCategory", headerName: "Service Category", width: 150 },
+    { field: "mainCategory", headerName: "Main Category", width: 150 },
     { field: "serviceName", headerName: "Service Name", width: 150 },
     { field: "subService", headerName: "Sub Service", width: 150 },
-    { field: "subSubService", headerName: "Sub Sub Service", width: 150 },
+    { field: "subService2", headerName: "Sub Service2", width: 150 },
     { field: "for", headerName: "For Information", width: 150 },
     { field: "description", headerName: "Description", width: 150 },
     { field: "estimatedTime", headerName: "Estimated Time", width: 150 },
@@ -135,34 +129,35 @@ export default function Service() {
         await addService({
           variables: {
             input: {
-              serviceCategory: row.data[0],
-              serviceName: row.data[1],
-              subService: row.data[2],
-              subSubService: row.data[3],
-              for: row.data[4],
-              description: row.data[5],
-              estimatedTime: parseInt(row.data[6]),
-              price: parseInt(row.data[7]),
-              inputLimit: parseInt(row.data[8]),
-              fileFormat: row.data[9],
-              deliveryFormat: row.data[10],
-              deliveryDays: parseInt(row.data[11]),
-              maxDuration: parseInt(row.data[12]),
-              numberOfReferenceFileUploads: parseInt(row.data[13]),
-              setOfRevisions: parseInt(row.data[14]),
-              revisionsDelivery: parseInt(row.data[15]),
-              mixVocalTuning: row.data[16],
-              mixProcessingReverbs: row.data[17],
-              mixProcessingDelays: row.data[18],
-              mixProcessingOtherFx: row.data[19],
+              mainCategory: row.data[0],
+              subCategory: row.data[1],
+              serviceName: row.data[2],
+              subService: row.data[3],
+              subService2: row.data[4],
+              for: row.data[5],
+              description: row.data[6],
+              estimatedTime: parseInt(row.data[7]),
+              price: parseInt(row.data[8]),
+              inputTrackLimit: parseInt(row.data[9]),
+              uploadFileFormat: [row.data[10]],
+              deliveryFileFormat: [row.data[11]],
+              deliveryDays: parseInt(row.data[12]),
+              maxFileDuration: parseInt(row.data[13]),
+              numberOfReferenceFileUploads: parseInt(row.data[14]),
+              setOfRevisions: parseInt(row.data[15]),
+              revisionsDelivery: parseInt(row.data[16]),
+              mixVocalTuning: row.data[17],
+              mixProcessingReverbs: row.data[18],
+              mixProcessingDelays: row.data[19],
+              mixProcessingOtherFx: row.data[20],
               addOn: [
                 {
                   type: "Extra Revision",
-                  value: parseInt(row.data[20]),
+                  value: parseInt(row.data[21]),
                 },
                 {
                   type: "30 Second",
-                  value: parseInt(row.data[21]),
+                  value: parseInt(row.data[22]),
                 },
               ],
             },
