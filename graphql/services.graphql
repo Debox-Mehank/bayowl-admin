@@ -6,7 +6,6 @@ query GetAllService {
     serviceName
     subService
     subService2
-    for
     description
     estimatedTime
     price
@@ -18,7 +17,7 @@ query GetAllService {
     numberOfReferenceFileUploads
     setOfRevisions
     revisionsDelivery
-    mixVocalTuning
+    mixVocalTuningBasic
     mixProcessingReverbs
     mixProcessingDelays
     mixProcessingOtherFx
@@ -117,7 +116,7 @@ query GetAllServiceForEmployee {
     subService2
     estimatedTime
     price
-    mixVocalTuning
+    mixVocalTuningBasic
     mixProcessingReverbs
     mixProcessingDelays
     mixProcessingOtherFx

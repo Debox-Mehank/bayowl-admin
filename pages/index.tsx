@@ -15,7 +15,7 @@ const Home: NextPage = () => {
     useQuery();
   }, []);
   if (pageDecider === "false" || !pageDecider) return <Login />;
-  return <Layout />;
+  return <Layout typeRole={pageDecider} />;
 };
 
 export default Home;
