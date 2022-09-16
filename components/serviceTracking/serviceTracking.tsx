@@ -18,7 +18,8 @@ import {
   AdminRole,
   Payment,
   useAllEmployeeLazyQuery,
-  useGetAllUnAssignedServiceLazyQuery,
+  useAssignServiceMutation,
+  useGetAllServiceForEmployeeLazyQuery,
   UserServices,
 } from "../../generated/graphql";
 
@@ -27,8 +28,7 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "650px",
-  height: "650px",
+  width: 400,
   bgcolor: "background.paper",
   boxShadow: 24,
   p: 4,
@@ -130,15 +130,37 @@ export default function ServiceTracking() {
       width: 150,
     },
   ];
-  const [getAllUnAssignedService] = useGetAllUnAssignedServiceLazyQuery();
+  const [getAllServiceForEmployee] = useGetAllServiceForEmployeeLazyQuery();
   const [getAllEmployees] = useAllEmployeeLazyQuery();
+  const [assignServiceForEmployee] = useAssignServiceMutation();
   const [allEmp, setAllEmp] = useState<Admin[]>([]);
+  const [loadingButton, setLoadingButton] = useState<boolean>(false);
+  const handleSubmit = async () => {
+    setLoadingButton(true);
+    if (!emp || !id) {
+      //throw error
+    }
+
+    const response = await assignServiceForEmployee({
+      variables: {
+        adminId: emp,
+        serviceId: id,
+      },
+    });
+
+    if (response) {
+      const prev = [...data];
+      setData(prev.filter((ind) => ind._id !== id));
+      onClose();
+    }
+  };
   const [data, setData] = useState<UserServices[]>([]);
   const [open, setOpen] = useState<boolean>(false);
   const [emp, setEmp] = useState<string>("");
   const [empName, setEmpName] = useState<string>("");
   const [id, setId] = useState<string>("");
   const onClose = () => {
+    setLoadingButton(false);
     setOpen(false);
     setId("");
   };
@@ -146,10 +168,10 @@ export default function ServiceTracking() {
   useEffect(() => {
     const fetchServices = async () => {
       setLoading(true);
-      const response = await getAllUnAssignedService();
-      if (response.data?.getAllUnAssignedService) {
+      const response = await getAllServiceForEmployee();
+      if (response.data?.getAllServiceForEmployee) {
         setData(
-          response.data?.getAllUnAssignedService.map((ind) => ({
+          response.data?.getAllServiceForEmployee.map((ind) => ({
             ...ind,
             id: ind._id,
             allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
@@ -195,15 +217,20 @@ export default function ServiceTracking() {
             <Typography id="modal-modal-title" variant="h6" component="h2">
               Type
             </Typography>
-            <Select value={type} onChange={(e) => setEmpName(e.target.value)}>
+            <Select value={emp} onChange={(e) => setEmpName(e.target.value)}>
               {allEmp.map((ind) => (
-                <MenuItem value={String(ind._id)}>{ind.name}</MenuItem>
+                <MenuItem
+                  value={String(ind._id)}
+                  onClick={() => setEmp(String(ind._id))}
+                >
+                  {ind.name}
+                </MenuItem>
               ))}
             </Select>
             <LoadingButton
               variant="contained"
-              //   onClick={handleSubmit}
-              //   loading={loadingButton}
+              onClick={handleSubmit}
+              loading={loadingButton}
             >
               Submit
             </LoadingButton>

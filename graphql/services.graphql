@@ -107,8 +107,8 @@ query AllAdmins {
   }
 }
 
-query GetAllUnAssignedService {
-  getAllUnAssignedService {
+query GetAllServiceForEmployee {
+  getAllServiceForEmployee {
     _id
     mainCategory
     subCategory
@@ -161,6 +161,10 @@ query AllEmployee {
     _id
     name
   }
+}
+
+mutation AssignService($adminId: String!, $serviceId: String!) {
+  assignService(adminId: $adminId, serviceId: $serviceId)
 }
 
 query AdminLogin($input: AdminLoginInput!) {

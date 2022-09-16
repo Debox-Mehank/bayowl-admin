@@ -63,6 +63,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   addService: Scalars['Boolean'];
   addUser: Scalars['String'];
+  assignService: Scalars['Boolean'];
 };
 
 
@@ -73,6 +74,12 @@ export type MutationAddServiceArgs = {
 
 export type MutationAddUserArgs = {
   input: AdminRegisterInput;
+};
+
+
+export type MutationAssignServiceArgs = {
+  adminId: Scalars['String'];
+  serviceId: Scalars['String'];
 };
 
 export type Payment = {
@@ -100,7 +107,7 @@ export type Query = {
   completeAccount: Scalars['Boolean'];
   getAllPayment: Array<Payment>;
   getAllService: Array<Services>;
-  getAllUnAssignedService: Array<UserServices>;
+  getAllServiceForEmployee: Array<UserServices>;
   getAllUser: Array<User>;
   getS3SignedURL: Scalars['String'];
   getServiceDetails: Array<Services>;
@@ -384,15 +391,23 @@ export type AllAdminsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type AllAdminsQuery = { __typename?: 'Query', allAdmins: Array<{ __typename?: 'Admin', _id?: string | null, name?: string | null, email?: string | null, type?: AdminRole | null, createdAt?: any | null, updatedAt?: any | null, createdBy?: { __typename?: 'Admin', name?: string | null } | null }> };
 
-export type GetAllUnAssignedServiceQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetAllServiceForEmployeeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAllUnAssignedServiceQuery = { __typename?: 'Query', getAllUnAssignedService: Array<{ __typename?: 'UserServices', _id: string, mainCategory: string, subCategory: string, serviceName: string, subService?: string | null, subService2?: string | null, estimatedTime?: number | null, price: number, mixVocalTuning?: string | null, mixProcessingReverbs?: string | null, mixProcessingDelays?: string | null, mixProcessingOtherFx?: string | null, deliveryDays?: number | null, updatedAt?: any | null, createdAt?: any | null, projectName?: string | null, paid: boolean, statusType: UserServiceStatus, setOfRevisions?: number | null, inputTrackLimit?: number | null, referenceFiles: Array<string>, deliveryFileFormat: Array<string>, uploadFileFormat: Array<string>, uploadedFiles: Array<string>, addOn: Array<{ __typename?: 'AddOn', type: string, value?: number | null, qty?: number | null }>, assignedTo?: { __typename?: 'Admin', name?: string | null } | null, assignedBy?: { __typename?: 'Admin', name?: string | null } | null, revisionFiles: Array<{ __typename?: 'RevisionFiles', file?: string | null, description?: string | null, revision: number }>, status: Array<{ __typename?: 'ServiceStatusObject', name?: UserServiceStatus | null, state: ServiceStatusObjectState }> }> };
+export type GetAllServiceForEmployeeQuery = { __typename?: 'Query', getAllServiceForEmployee: Array<{ __typename?: 'UserServices', _id: string, mainCategory: string, subCategory: string, serviceName: string, subService?: string | null, subService2?: string | null, estimatedTime?: number | null, price: number, mixVocalTuning?: string | null, mixProcessingReverbs?: string | null, mixProcessingDelays?: string | null, mixProcessingOtherFx?: string | null, deliveryDays?: number | null, updatedAt?: any | null, createdAt?: any | null, projectName?: string | null, paid: boolean, statusType: UserServiceStatus, setOfRevisions?: number | null, inputTrackLimit?: number | null, referenceFiles: Array<string>, deliveryFileFormat: Array<string>, uploadFileFormat: Array<string>, uploadedFiles: Array<string>, addOn: Array<{ __typename?: 'AddOn', type: string, value?: number | null, qty?: number | null }>, assignedTo?: { __typename?: 'Admin', name?: string | null } | null, assignedBy?: { __typename?: 'Admin', name?: string | null } | null, revisionFiles: Array<{ __typename?: 'RevisionFiles', file?: string | null, description?: string | null, revision: number }>, status: Array<{ __typename?: 'ServiceStatusObject', name?: UserServiceStatus | null, state: ServiceStatusObjectState }> }> };
 
 export type AllEmployeeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type AllEmployeeQuery = { __typename?: 'Query', allEmployee: Array<{ __typename?: 'Admin', _id?: string | null, name?: string | null }> };
+
+export type AssignServiceMutationVariables = Exact<{
+  adminId: Scalars['String'];
+  serviceId: Scalars['String'];
+}>;
+
+
+export type AssignServiceMutation = { __typename?: 'Mutation', assignService: boolean };
 
 export type AdminLoginQueryVariables = Exact<{
   input: AdminLoginInput;
@@ -640,9 +655,9 @@ export function useAllAdminsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
 export type AllAdminsQueryHookResult = ReturnType<typeof useAllAdminsQuery>;
 export type AllAdminsLazyQueryHookResult = ReturnType<typeof useAllAdminsLazyQuery>;
 export type AllAdminsQueryResult = Apollo.QueryResult<AllAdminsQuery, AllAdminsQueryVariables>;
-export const GetAllUnAssignedServiceDocument = gql`
-    query GetAllUnAssignedService {
-  getAllUnAssignedService {
+export const GetAllServiceForEmployeeDocument = gql`
+    query GetAllServiceForEmployee {
+  getAllServiceForEmployee {
     _id
     mainCategory
     subCategory
@@ -692,31 +707,31 @@ export const GetAllUnAssignedServiceDocument = gql`
     `;
 
 /**
- * __useGetAllUnAssignedServiceQuery__
+ * __useGetAllServiceForEmployeeQuery__
  *
- * To run a query within a React component, call `useGetAllUnAssignedServiceQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetAllUnAssignedServiceQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGetAllServiceForEmployeeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetAllServiceForEmployeeQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useGetAllUnAssignedServiceQuery({
+ * const { data, loading, error } = useGetAllServiceForEmployeeQuery({
  *   variables: {
  *   },
  * });
  */
-export function useGetAllUnAssignedServiceQuery(baseOptions?: Apollo.QueryHookOptions<GetAllUnAssignedServiceQuery, GetAllUnAssignedServiceQueryVariables>) {
+export function useGetAllServiceForEmployeeQuery(baseOptions?: Apollo.QueryHookOptions<GetAllServiceForEmployeeQuery, GetAllServiceForEmployeeQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetAllUnAssignedServiceQuery, GetAllUnAssignedServiceQueryVariables>(GetAllUnAssignedServiceDocument, options);
+        return Apollo.useQuery<GetAllServiceForEmployeeQuery, GetAllServiceForEmployeeQueryVariables>(GetAllServiceForEmployeeDocument, options);
       }
-export function useGetAllUnAssignedServiceLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetAllUnAssignedServiceQuery, GetAllUnAssignedServiceQueryVariables>) {
+export function useGetAllServiceForEmployeeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetAllServiceForEmployeeQuery, GetAllServiceForEmployeeQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetAllUnAssignedServiceQuery, GetAllUnAssignedServiceQueryVariables>(GetAllUnAssignedServiceDocument, options);
+          return Apollo.useLazyQuery<GetAllServiceForEmployeeQuery, GetAllServiceForEmployeeQueryVariables>(GetAllServiceForEmployeeDocument, options);
         }
-export type GetAllUnAssignedServiceQueryHookResult = ReturnType<typeof useGetAllUnAssignedServiceQuery>;
-export type GetAllUnAssignedServiceLazyQueryHookResult = ReturnType<typeof useGetAllUnAssignedServiceLazyQuery>;
-export type GetAllUnAssignedServiceQueryResult = Apollo.QueryResult<GetAllUnAssignedServiceQuery, GetAllUnAssignedServiceQueryVariables>;
+export type GetAllServiceForEmployeeQueryHookResult = ReturnType<typeof useGetAllServiceForEmployeeQuery>;
+export type GetAllServiceForEmployeeLazyQueryHookResult = ReturnType<typeof useGetAllServiceForEmployeeLazyQuery>;
+export type GetAllServiceForEmployeeQueryResult = Apollo.QueryResult<GetAllServiceForEmployeeQuery, GetAllServiceForEmployeeQueryVariables>;
 export const AllEmployeeDocument = gql`
     query AllEmployee {
   allEmployee {
@@ -752,6 +767,38 @@ export function useAllEmployeeLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
 export type AllEmployeeQueryHookResult = ReturnType<typeof useAllEmployeeQuery>;
 export type AllEmployeeLazyQueryHookResult = ReturnType<typeof useAllEmployeeLazyQuery>;
 export type AllEmployeeQueryResult = Apollo.QueryResult<AllEmployeeQuery, AllEmployeeQueryVariables>;
+export const AssignServiceDocument = gql`
+    mutation AssignService($adminId: String!, $serviceId: String!) {
+  assignService(adminId: $adminId, serviceId: $serviceId)
+}
+    `;
+export type AssignServiceMutationFn = Apollo.MutationFunction<AssignServiceMutation, AssignServiceMutationVariables>;
+
+/**
+ * __useAssignServiceMutation__
+ *
+ * To run a mutation, you first call `useAssignServiceMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAssignServiceMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [assignServiceMutation, { data, loading, error }] = useAssignServiceMutation({
+ *   variables: {
+ *      adminId: // value for 'adminId'
+ *      serviceId: // value for 'serviceId'
+ *   },
+ * });
+ */
+export function useAssignServiceMutation(baseOptions?: Apollo.MutationHookOptions<AssignServiceMutation, AssignServiceMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AssignServiceMutation, AssignServiceMutationVariables>(AssignServiceDocument, options);
+      }
+export type AssignServiceMutationHookResult = ReturnType<typeof useAssignServiceMutation>;
+export type AssignServiceMutationResult = Apollo.MutationResult<AssignServiceMutation>;
+export type AssignServiceMutationOptions = Apollo.BaseMutationOptions<AssignServiceMutation, AssignServiceMutationVariables>;
 export const AdminLoginDocument = gql`
     query AdminLogin($input: AdminLoginInput!) {
   adminLogin(input: $input)
