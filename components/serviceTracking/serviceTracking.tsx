@@ -148,11 +148,7 @@ export default function ServiceTracking() {
       },
     });
 
-    if (response) {
-      const prev = [...data];
-      setData(prev.filter((ind) => ind._id !== id));
-      onClose();
-    }
+    if (response) onClose();
   };
   const [data, setData] = useState<UserServices[]>([]);
   const [open, setOpen] = useState<boolean>(false);
