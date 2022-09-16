@@ -31,13 +31,13 @@ export type AddOnInput = {
 
 export type Admin = {
   __typename?: 'Admin';
-  _id: Scalars['ID'];
-  createdAt: Scalars['DateTime'];
-  createdBy: Admin;
-  email: Scalars['String'];
-  name: Scalars['String'];
-  type: AdminRole;
-  updatedAt: Scalars['DateTime'];
+  _id?: Maybe<Scalars['ID']>;
+  createdAt?: Maybe<Scalars['DateTime']>;
+  createdBy?: Maybe<Admin>;
+  email?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  type?: Maybe<AdminRole>;
+  updatedAt?: Maybe<Scalars['DateTime']>;
 };
 
 export type AdminLoginInput = {
@@ -96,9 +96,11 @@ export type Query = {
   adminLogin: Scalars['Boolean'];
   adminLogout: Scalars['Boolean'];
   allAdmins: Array<Admin>;
+  allEmployee: Array<Admin>;
   completeAccount: Scalars['Boolean'];
   getAllPayment: Array<Payment>;
   getAllService: Array<Services>;
+  getAllUnAssignedService: Array<UserServices>;
   getAllUser: Array<User>;
   getS3SignedURL: Scalars['String'];
   getServiceDetails: Array<Services>;
@@ -380,7 +382,17 @@ export type GetAllPaymentQuery = { __typename?: 'Query', getAllPayment: Array<{ 
 export type AllAdminsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type AllAdminsQuery = { __typename?: 'Query', allAdmins: Array<{ __typename?: 'Admin', _id: string, name: string, email: string, type: AdminRole, createdAt: any, updatedAt: any, createdBy: { __typename?: 'Admin', name: string } }> };
+export type AllAdminsQuery = { __typename?: 'Query', allAdmins: Array<{ __typename?: 'Admin', _id?: string | null, name?: string | null, email?: string | null, type?: AdminRole | null, createdAt?: any | null, updatedAt?: any | null, createdBy?: { __typename?: 'Admin', name?: string | null } | null }> };
+
+export type GetAllUnAssignedServiceQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAllUnAssignedServiceQuery = { __typename?: 'Query', getAllUnAssignedService: Array<{ __typename?: 'UserServices', _id: string, mainCategory: string, subCategory: string, serviceName: string, subService?: string | null, subService2?: string | null, estimatedTime?: number | null, price: number, mixVocalTuning?: string | null, mixProcessingReverbs?: string | null, mixProcessingDelays?: string | null, mixProcessingOtherFx?: string | null, deliveryDays?: number | null, updatedAt?: any | null, createdAt?: any | null, projectName?: string | null, paid: boolean, statusType: UserServiceStatus, setOfRevisions?: number | null, inputTrackLimit?: number | null, referenceFiles: Array<string>, deliveryFileFormat: Array<string>, uploadFileFormat: Array<string>, uploadedFiles: Array<string>, addOn: Array<{ __typename?: 'AddOn', type: string, value?: number | null, qty?: number | null }>, assignedTo?: { __typename?: 'Admin', name?: string | null } | null, assignedBy?: { __typename?: 'Admin', name?: string | null } | null, revisionFiles: Array<{ __typename?: 'RevisionFiles', file?: string | null, description?: string | null, revision: number }>, status: Array<{ __typename?: 'ServiceStatusObject', name?: UserServiceStatus | null, state: ServiceStatusObjectState }> }> };
+
+export type AllEmployeeQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AllEmployeeQuery = { __typename?: 'Query', allEmployee: Array<{ __typename?: 'Admin', _id?: string | null, name?: string | null }> };
 
 export type AdminLoginQueryVariables = Exact<{
   input: AdminLoginInput;
@@ -628,6 +640,118 @@ export function useAllAdminsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
 export type AllAdminsQueryHookResult = ReturnType<typeof useAllAdminsQuery>;
 export type AllAdminsLazyQueryHookResult = ReturnType<typeof useAllAdminsLazyQuery>;
 export type AllAdminsQueryResult = Apollo.QueryResult<AllAdminsQuery, AllAdminsQueryVariables>;
+export const GetAllUnAssignedServiceDocument = gql`
+    query GetAllUnAssignedService {
+  getAllUnAssignedService {
+    _id
+    mainCategory
+    subCategory
+    serviceName
+    subService
+    subService2
+    estimatedTime
+    price
+    mixVocalTuning
+    mixProcessingReverbs
+    mixProcessingDelays
+    mixProcessingOtherFx
+    addOn {
+      type
+      value
+      qty
+    }
+    deliveryDays
+    updatedAt
+    createdAt
+    projectName
+    paid
+    assignedTo {
+      name
+    }
+    assignedBy {
+      name
+    }
+    statusType
+    setOfRevisions
+    inputTrackLimit
+    referenceFiles
+    revisionFiles {
+      file
+      description
+      revision
+    }
+    status {
+      name
+      state
+    }
+    deliveryFileFormat
+    uploadFileFormat
+    uploadedFiles
+  }
+}
+    `;
+
+/**
+ * __useGetAllUnAssignedServiceQuery__
+ *
+ * To run a query within a React component, call `useGetAllUnAssignedServiceQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetAllUnAssignedServiceQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetAllUnAssignedServiceQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetAllUnAssignedServiceQuery(baseOptions?: Apollo.QueryHookOptions<GetAllUnAssignedServiceQuery, GetAllUnAssignedServiceQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetAllUnAssignedServiceQuery, GetAllUnAssignedServiceQueryVariables>(GetAllUnAssignedServiceDocument, options);
+      }
+export function useGetAllUnAssignedServiceLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetAllUnAssignedServiceQuery, GetAllUnAssignedServiceQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetAllUnAssignedServiceQuery, GetAllUnAssignedServiceQueryVariables>(GetAllUnAssignedServiceDocument, options);
+        }
+export type GetAllUnAssignedServiceQueryHookResult = ReturnType<typeof useGetAllUnAssignedServiceQuery>;
+export type GetAllUnAssignedServiceLazyQueryHookResult = ReturnType<typeof useGetAllUnAssignedServiceLazyQuery>;
+export type GetAllUnAssignedServiceQueryResult = Apollo.QueryResult<GetAllUnAssignedServiceQuery, GetAllUnAssignedServiceQueryVariables>;
+export const AllEmployeeDocument = gql`
+    query AllEmployee {
+  allEmployee {
+    _id
+    name
+  }
+}
+    `;
+
+/**
+ * __useAllEmployeeQuery__
+ *
+ * To run a query within a React component, call `useAllEmployeeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAllEmployeeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAllEmployeeQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useAllEmployeeQuery(baseOptions?: Apollo.QueryHookOptions<AllEmployeeQuery, AllEmployeeQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AllEmployeeQuery, AllEmployeeQueryVariables>(AllEmployeeDocument, options);
+      }
+export function useAllEmployeeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AllEmployeeQuery, AllEmployeeQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AllEmployeeQuery, AllEmployeeQueryVariables>(AllEmployeeDocument, options);
+        }
+export type AllEmployeeQueryHookResult = ReturnType<typeof useAllEmployeeQuery>;
+export type AllEmployeeLazyQueryHookResult = ReturnType<typeof useAllEmployeeLazyQuery>;
+export type AllEmployeeQueryResult = Apollo.QueryResult<AllEmployeeQuery, AllEmployeeQueryVariables>;
 export const AdminLoginDocument = gql`
     query AdminLogin($input: AdminLoginInput!) {
   adminLogin(input: $input)

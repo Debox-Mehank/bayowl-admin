@@ -17,6 +17,7 @@ import { ListOfService } from "./interface";
 import UAM from "../uam/uam";
 import Payments from "../payments/payments";
 import TAM from "../tam/tam";
+import ServiceTracking from "../serviceTracking/serviceTracking";
 
 const drawerWidth: number = 240;
 
@@ -29,6 +30,7 @@ const sideMenuItem: ListOfService[] = [
   ListOfService.UAM,
   ListOfService.Payments,
   ListOfService.TAM,
+  ListOfService.ServiceTracking,
 ];
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
@@ -95,6 +97,8 @@ function Layout() {
         return <Payments />;
       case ListOfService.TAM:
         return <TAM />;
+      case ListOfService.ServiceTracking:
+        return <ServiceTracking />;
     }
   }
 

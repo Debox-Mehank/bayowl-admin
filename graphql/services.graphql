@@ -107,6 +107,62 @@ query AllAdmins {
   }
 }
 
+query GetAllUnAssignedService {
+  getAllUnAssignedService {
+    _id
+    mainCategory
+    subCategory
+    serviceName
+    subService
+    subService2
+    estimatedTime
+    price
+    mixVocalTuning
+    mixProcessingReverbs
+    mixProcessingDelays
+    mixProcessingOtherFx
+    addOn {
+      type
+      value
+      qty
+    }
+    deliveryDays
+    updatedAt
+    createdAt
+    projectName
+    paid
+    assignedTo {
+      name
+    }
+    assignedBy {
+      name
+    }
+    statusType
+    setOfRevisions
+    inputTrackLimit
+    referenceFiles
+    revisionFiles {
+      file
+      description
+      revision
+    }
+    status {
+      name
+      state
+    }
+    deliveryFileFormat
+    uploadFileFormat
+    uploadedFiles
+  }
+}
+
+query AllEmployee {
+  allEmployee {
+    _id
+    name
+  }
+}
+
 query AdminLogin($input: AdminLoginInput!) {
   adminLogin(input: $input)
 }

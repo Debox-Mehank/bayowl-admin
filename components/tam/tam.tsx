@@ -71,13 +71,13 @@ export default function TAM() {
       if (response.data?.allAdmins) {
         setData(
           response.data?.allAdmins.map((ind) => ({
-            name: ind.name,
-            email: ind.email,
-            type: ind.type,
-            createdBy: ind.createdBy.name,
-            createdAt: ind.createdAt,
-            updatedAt: ind.updatedAt,
-            id: ind._id,
+            name: ind.name!,
+            email: ind.email!,
+            type: ind.type!,
+            createdBy: ind.createdBy!.name!,
+            createdAt: ind.createdAt!,
+            updatedAt: ind.updatedAt!,
+            id: ind._id!,
           })) ?? []
         );
       }
