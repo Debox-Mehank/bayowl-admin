@@ -19,9 +19,11 @@ import {
   AdminRole,
   Payment,
   useAllEmployeeLazyQuery,
+  useApproveProjectLazyQuery,
   useAssignServiceMutation,
   useGetAllServiceForEmployeeLazyQuery,
   UserServices,
+  UserServiceStatus,
 } from "../../generated/graphql";
 
 const style = {
@@ -40,6 +42,19 @@ export default function ServiceTracking() {
     setOpen(true);
     setId(cell.row.id);
   };
+  const [approveLoading, setApproveLoading] = useState<string>("");
+  const [approveProjQuery] = useApproveProjectLazyQuery();
+  const approveProject = async (serviceId: string) => {
+    setApproveLoading(serviceId);
+    const response = await approveProjQuery({
+      variables: {
+        serviceId: serviceId,
+      },
+    });
+    setApproveLoading("");
+
+    //need toast here
+  };
   const columns: GridColDef[] = [
     {
       field: "assign",
@@ -49,6 +64,68 @@ export default function ServiceTracking() {
         return (
           <Button variant="contained" onClick={() => assignService(cellValues)}>
             Assign
+          </Button>
+        );
+      },
+    },
+    {
+      field: "Download",
+      headerName: "Download",
+      width: 150,
+      renderCell: (cellValues) => {
+        return (
+          <Button
+            disabled={
+              cellValues.row.statusType ===
+              UserServiceStatus.Underreviewinternal
+                ? false
+                : true
+            }
+            variant="contained"
+          >
+            Download
+          </Button>
+        );
+      },
+    },
+    {
+      field: "Approve",
+      headerName: "Approve",
+      width: 150,
+      renderCell: (cellValues) => {
+        return (
+          <LoadingButton
+            disabled={
+              cellValues.row.statusType ===
+              UserServiceStatus.Underreviewinternal
+                ? false
+                : true
+            }
+            onClick={() => approveProject(cellValues.row.id)}
+            variant="contained"
+            loading={approveLoading === cellValues.row.id ? true : false}
+          >
+            Approve
+          </LoadingButton>
+        );
+      },
+    },
+    {
+      field: "Reject",
+      headerName: "Reject",
+      width: 150,
+      renderCell: (cellValues) => {
+        return (
+          <Button
+            disabled={
+              cellValues.row.statusType ===
+              UserServiceStatus.Underreviewinternal
+                ? false
+                : true
+            }
+            variant="contained"
+          >
+            Reject
           </Button>
         );
       },
@@ -216,14 +293,13 @@ export default function ServiceTracking() {
             </Typography>
             <Select value={emp} onChange={(e) => setEmpName(e.target.value)}>
               {allEmp.map((ind, i) => (
-                <React.Fragment key={i}>
-                  <MenuItem
-                    value={String(ind._id)}
-                    onClick={() => setEmp(String(ind._id))}
-                  >
-                    {ind.name}
-                  </MenuItem>
-                </React.Fragment>
+                <MenuItem
+                  key={i}
+                  value={String(ind._id)}
+                  onClick={() => setEmp(String(ind._id))}
+                >
+                  {ind.name}
+                </MenuItem>
               ))}
             </Select>
             <LoadingButton
