@@ -59,6 +59,29 @@ export enum AdminRole {
   Master = 'master'
 }
 
+export type FileUploadResponse = {
+  __typename?: 'FileUploadResponse';
+  fileId?: Maybe<Scalars['String']>;
+  fileKey?: Maybe<Scalars['String']>;
+};
+
+export type FinalMultipartUploadInput = {
+  fileId?: InputMaybe<Scalars['String']>;
+  fileKey?: InputMaybe<Scalars['String']>;
+  parts?: InputMaybe<Array<FinalMultipartUploadPartsInput>>;
+};
+
+export type FinalMultipartUploadPartsInput = {
+  ETag?: InputMaybe<Scalars['String']>;
+  PartNumber?: InputMaybe<Scalars['Float']>;
+};
+
+export type MultipartSignedUrlResponse = {
+  __typename?: 'MultipartSignedUrlResponse';
+  PartNumber?: Maybe<Scalars['Float']>;
+  signedUrl?: Maybe<Scalars['String']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   addService: Scalars['Boolean'];
@@ -105,13 +128,16 @@ export type Query = {
   allAdmins: Array<Admin>;
   allEmployee: Array<Admin>;
   completeAccount: Scalars['Boolean'];
+  finalizeMultipartUpload?: Maybe<Scalars['String']>;
   getAllPayment: Array<Payment>;
   getAllService: Array<Services>;
   getAllServiceForEmployee: Array<UserServices>;
   getAllUser: Array<User>;
+  getMultipartPreSignedUrls: Array<MultipartSignedUrlResponse>;
   getS3SignedURL: Scalars['String'];
   getServiceDetails: Array<Services>;
   getUserServiceDetailsById?: Maybe<UserServices>;
+  initFileUpload: FileUploadResponse;
   initiatePayment: Scalars['String'];
   login: Scalars['Boolean'];
   logout: Scalars['Boolean'];
@@ -143,6 +169,23 @@ export type QueryCompleteAccountArgs = {
 };
 
 
+export type QueryFinalizeMultipartUploadArgs = {
+  input: FinalMultipartUploadInput;
+};
+
+
+export type QueryGetMultipartPreSignedUrlsArgs = {
+  fileId: Scalars['String'];
+  fileKey: Scalars['String'];
+  parts: Scalars['Float'];
+};
+
+
+export type QueryGetS3SignedUrlArgs = {
+  fileName: Scalars['String'];
+};
+
+
 export type QueryGetServiceDetailsArgs = {
   input: ServicesDetailInput;
 };
@@ -150,6 +193,11 @@ export type QueryGetServiceDetailsArgs = {
 
 export type QueryGetUserServiceDetailsByIdArgs = {
   serviceId: Scalars['String'];
+};
+
+
+export type QueryInitFileUploadArgs = {
+  fileName: Scalars['String'];
 };
 
 
@@ -222,14 +270,14 @@ export type Services = {
   deliveryFileFormat: Array<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   estimatedTime?: Maybe<Scalars['Float']>;
-  for?: Maybe<Scalars['String']>;
   inputTrackLimit?: Maybe<Scalars['Float']>;
   mainCategory: Scalars['String'];
   maxFileDuration?: Maybe<Scalars['Float']>;
   mixProcessingDelays?: Maybe<Scalars['String']>;
   mixProcessingOtherFx?: Maybe<Scalars['String']>;
   mixProcessingReverbs?: Maybe<Scalars['String']>;
-  mixVocalTuning?: Maybe<Scalars['String']>;
+  mixVocalTuningAdvanced?: Maybe<Scalars['String']>;
+  mixVocalTuningBasic?: Maybe<Scalars['String']>;
   numberOfReferenceFileUploads?: Maybe<Scalars['Float']>;
   price: Scalars['Float'];
   revisionsDelivery?: Maybe<Scalars['Float']>;
@@ -257,14 +305,14 @@ export type ServicesInput = {
   deliveryFileFormat: Array<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   estimatedTime?: InputMaybe<Scalars['Float']>;
-  for?: InputMaybe<Scalars['String']>;
   inputTrackLimit?: InputMaybe<Scalars['Float']>;
   mainCategory: Scalars['String'];
   maxFileDuration?: InputMaybe<Scalars['Float']>;
   mixProcessingDelays?: InputMaybe<Scalars['String']>;
   mixProcessingOtherFx?: InputMaybe<Scalars['String']>;
   mixProcessingReverbs?: InputMaybe<Scalars['String']>;
-  mixVocalTuning?: InputMaybe<Scalars['String']>;
+  mixVocalTuningAdvanced?: InputMaybe<Scalars['String']>;
+  mixVocalTuningBasic?: InputMaybe<Scalars['String']>;
   numberOfReferenceFileUploads?: InputMaybe<Scalars['Float']>;
   price: Scalars['Float'];
   revisionsDelivery?: InputMaybe<Scalars['Float']>;
@@ -314,14 +362,14 @@ export type UserServices = {
   deliveryFileFormat: Array<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   estimatedTime?: Maybe<Scalars['Float']>;
-  for?: Maybe<Scalars['String']>;
   inputTrackLimit?: Maybe<Scalars['Float']>;
   mainCategory: Scalars['String'];
   maxFileDuration?: Maybe<Scalars['Float']>;
   mixProcessingDelays?: Maybe<Scalars['String']>;
   mixProcessingOtherFx?: Maybe<Scalars['String']>;
   mixProcessingReverbs?: Maybe<Scalars['String']>;
-  mixVocalTuning?: Maybe<Scalars['String']>;
+  mixVocalTuningAdvanced?: Maybe<Scalars['String']>;
+  mixVocalTuningBasic?: Maybe<Scalars['String']>;
   numberOfReferenceFileUploads?: Maybe<Scalars['Float']>;
   paid: Scalars['Boolean'];
   price: Scalars['Float'];
@@ -350,14 +398,14 @@ export type UserServicesInput = {
   deliveryFileFormat: Array<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   estimatedTime?: InputMaybe<Scalars['Float']>;
-  for?: InputMaybe<Scalars['String']>;
   inputTrackLimit?: InputMaybe<Scalars['Float']>;
   mainCategory: Scalars['String'];
   maxFileDuration?: InputMaybe<Scalars['Float']>;
   mixProcessingDelays?: InputMaybe<Scalars['String']>;
   mixProcessingOtherFx?: InputMaybe<Scalars['String']>;
   mixProcessingReverbs?: InputMaybe<Scalars['String']>;
-  mixVocalTuning?: InputMaybe<Scalars['String']>;
+  mixVocalTuningAdvanced?: InputMaybe<Scalars['String']>;
+  mixVocalTuningBasic?: InputMaybe<Scalars['String']>;
   numberOfReferenceFileUploads?: InputMaybe<Scalars['Float']>;
   price: Scalars['Float'];
   projectName?: InputMaybe<Scalars['String']>;
@@ -374,7 +422,7 @@ export type UserServicesInput = {
 export type GetAllServiceQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAllServiceQuery = { __typename?: 'Query', getAllService: Array<{ __typename?: 'Services', _id: string, mainCategory: string, subCategory: string, serviceName: string, subService?: string | null, subService2?: string | null, for?: string | null, description?: string | null, estimatedTime?: number | null, price: number, inputTrackLimit?: number | null, uploadFileFormat: Array<string>, deliveryFileFormat: Array<string>, deliveryDays?: number | null, maxFileDuration?: number | null, numberOfReferenceFileUploads?: number | null, setOfRevisions?: number | null, revisionsDelivery?: number | null, mixVocalTuning?: string | null, mixProcessingReverbs?: string | null, mixProcessingDelays?: string | null, mixProcessingOtherFx?: string | null, createdAt?: any | null, updatedAt?: any | null, addOn: Array<{ __typename?: 'AddOn', type: string, value?: number | null, qty?: number | null }> }> };
+export type GetAllServiceQuery = { __typename?: 'Query', getAllService: Array<{ __typename?: 'Services', _id: string, mainCategory: string, subCategory: string, serviceName: string, subService?: string | null, subService2?: string | null, description?: string | null, estimatedTime?: number | null, price: number, inputTrackLimit?: number | null, uploadFileFormat: Array<string>, deliveryFileFormat: Array<string>, deliveryDays?: number | null, maxFileDuration?: number | null, numberOfReferenceFileUploads?: number | null, setOfRevisions?: number | null, revisionsDelivery?: number | null, mixVocalTuningBasic?: string | null, mixVocalTuningAdvanced?: string | null, mixProcessingReverbs?: string | null, mixProcessingDelays?: string | null, mixProcessingOtherFx?: string | null, createdAt?: any | null, updatedAt?: any | null, addOn: Array<{ __typename?: 'AddOn', type: string, value?: number | null, qty?: number | null }> }> };
 
 export type GetAllUserQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -394,7 +442,7 @@ export type AllAdminsQuery = { __typename?: 'Query', allAdmins: Array<{ __typena
 export type GetAllServiceForEmployeeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAllServiceForEmployeeQuery = { __typename?: 'Query', getAllServiceForEmployee: Array<{ __typename?: 'UserServices', _id: string, mainCategory: string, subCategory: string, serviceName: string, subService?: string | null, subService2?: string | null, estimatedTime?: number | null, price: number, mixVocalTuning?: string | null, mixProcessingReverbs?: string | null, mixProcessingDelays?: string | null, mixProcessingOtherFx?: string | null, deliveryDays?: number | null, updatedAt?: any | null, createdAt?: any | null, projectName?: string | null, paid: boolean, statusType: UserServiceStatus, setOfRevisions?: number | null, inputTrackLimit?: number | null, referenceFiles: Array<string>, deliveryFileFormat: Array<string>, uploadFileFormat: Array<string>, uploadedFiles: Array<string>, addOn: Array<{ __typename?: 'AddOn', type: string, value?: number | null, qty?: number | null }>, assignedTo?: { __typename?: 'Admin', name?: string | null } | null, assignedBy?: { __typename?: 'Admin', name?: string | null } | null, revisionFiles: Array<{ __typename?: 'RevisionFiles', file?: string | null, description?: string | null, revision: number }>, status: Array<{ __typename?: 'ServiceStatusObject', name?: UserServiceStatus | null, state: ServiceStatusObjectState }> }> };
+export type GetAllServiceForEmployeeQuery = { __typename?: 'Query', getAllServiceForEmployee: Array<{ __typename?: 'UserServices', _id: string, mainCategory: string, subCategory: string, serviceName: string, subService?: string | null, subService2?: string | null, estimatedTime?: number | null, price: number, mixVocalTuningBasic?: string | null, mixVocalTuningAdvanced?: string | null, mixProcessingReverbs?: string | null, mixProcessingDelays?: string | null, mixProcessingOtherFx?: string | null, deliveryDays?: number | null, updatedAt?: any | null, createdAt?: any | null, projectName?: string | null, paid: boolean, statusType: UserServiceStatus, setOfRevisions?: number | null, inputTrackLimit?: number | null, referenceFiles: Array<string>, deliveryFileFormat: Array<string>, uploadFileFormat: Array<string>, uploadedFiles: Array<string>, addOn: Array<{ __typename?: 'AddOn', type: string, value?: number | null, qty?: number | null }>, assignedTo?: { __typename?: 'Admin', name?: string | null } | null, assignedBy?: { __typename?: 'Admin', name?: string | null } | null, revisionFiles: Array<{ __typename?: 'RevisionFiles', file?: string | null, description?: string | null, revision: number }>, status: Array<{ __typename?: 'ServiceStatusObject', name?: UserServiceStatus | null, state: ServiceStatusObjectState }> }> };
 
 export type AllEmployeeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -445,7 +493,6 @@ export const GetAllServiceDocument = gql`
     serviceName
     subService
     subService2
-    for
     description
     estimatedTime
     price
@@ -457,7 +504,8 @@ export const GetAllServiceDocument = gql`
     numberOfReferenceFileUploads
     setOfRevisions
     revisionsDelivery
-    mixVocalTuning
+    mixVocalTuningBasic
+    mixVocalTuningAdvanced
     mixProcessingReverbs
     mixProcessingDelays
     mixProcessingOtherFx
@@ -666,7 +714,8 @@ export const GetAllServiceForEmployeeDocument = gql`
     subService2
     estimatedTime
     price
-    mixVocalTuning
+    mixVocalTuningBasic
+    mixVocalTuningAdvanced
     mixProcessingReverbs
     mixProcessingDelays
     mixProcessingOtherFx

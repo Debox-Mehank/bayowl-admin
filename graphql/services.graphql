@@ -6,7 +6,6 @@ query GetAllService {
     serviceName
     subService
     subService2
-    for
     description
     estimatedTime
     price
@@ -18,7 +17,8 @@ query GetAllService {
     numberOfReferenceFileUploads
     setOfRevisions
     revisionsDelivery
-    mixVocalTuning
+    mixVocalTuningBasic
+    mixVocalTuningAdvanced
     mixProcessingReverbs
     mixProcessingDelays
     mixProcessingOtherFx
@@ -39,35 +39,35 @@ query GetAllUser {
     email
     number
     services {
-      mainCategory
-      subCategory
-      serviceName
-      subService
-      subService2
-      uploadedFiles
-      referenceFiles
-      statusType
       _id
-      addOn {
-        type
-        value
-        qty
-      }
-      deliveryFileFormat
-      # createdAt
-      # updatedAt
-      uploadFileFormat
-      paid
-      price
-      revisionFiles {
-        file
-        description
-        revision
-      }
+      statusType
       status {
         name
         state
       }
+      # mainCategory
+      # subCategory
+      # serviceName
+      # subService
+      # subService2
+      # uploadedFiles
+      # referenceFiles
+      # addOn {
+      #   type
+      #   value
+      #   qty
+      # }
+      # deliveryFileFormat
+      # # createdAt
+      # # updatedAt
+      # uploadFileFormat
+      # paid
+      # price
+      # revisionFiles {
+      #   file
+      #   description
+      #   revision
+      # }
     }
     lastLoggedIn
     lastLoggedOut
@@ -117,7 +117,8 @@ query GetAllServiceForEmployee {
     subService2
     estimatedTime
     price
-    mixVocalTuning
+    mixVocalTuningBasic
+    mixVocalTuningAdvanced
     mixProcessingReverbs
     mixProcessingDelays
     mixProcessingOtherFx
@@ -153,6 +154,10 @@ query GetAllServiceForEmployee {
     deliveryFileFormat
     uploadFileFormat
     uploadedFiles
+    reupload
+    notes
+    submissionDate
+    estDeliveryDate
   }
 }
 
