@@ -1,22 +1,35 @@
 import { LinearProgress } from "@mui/material";
 import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
+import moment from "moment";
 import { useEffect, useState } from "react";
 import { useGetAllUserLazyQuery, User } from "../../generated/graphql";
 
+export type CustomerUserOmit = Omit<User, "services">;
+
+interface CustomUser extends CustomerUserOmit {
+  id: string;
+  numberOfService: number;
+}
+
+const CELL_WIDTH = 180;
+
 export default function UAM() {
   const [getAllUser] = useGetAllUserLazyQuery();
-  const [data, setData] = useState<User[]>([]);
+  const [data, setData] = useState<CustomUser[]>([]);
   useEffect(() => {
     const fetchServices = async () => {
       setLoading(true);
       const response = await getAllUser();
       if (response.data?.getAllUser) {
         setData(
-          response.data?.getAllUser.map((ind) => ({
-            ...ind,
-            id: ind._id,
-            numberOfService: ind.services.length,
-          })) ?? []
+          response.data?.getAllUser.map((el) => ({
+            ...el,
+            id: el._id,
+            numberOfService: el.services.length,
+            lastLoggedIn: moment(el.lastLoggedIn).format("MMM Do YY, hh:mm a"),
+            createdAt: moment(el.createdAt).format("MMM Do YY, hh:mm a"),
+            updatedAt: moment(el.updatedAt).format("MMM Do YY, hh:mm a"),
+          }))
         );
       }
       setLoading(false);
@@ -24,14 +37,22 @@ export default function UAM() {
     fetchServices();
   }, []);
   const [columns, setColumns] = useState<GridColDef[]>([
-    { field: "name", headerName: "Name", width: 150 },
-    { field: "email", headerName: "Email", width: 150 },
-    { field: "number", headerName: "Number", width: 150 },
-    { field: "numberOfService", headerName: "Number Of Service", width: 150 },
-    { field: "accountVerified", headerName: "Account Verified", width: 150 },
-    { field: "lastLoggedIn", headerName: "Last Logged In", width: 150 },
-    { field: "createdAt", headerName: "Created At", width: 150 },
-    { field: "updatedAt", headerName: "Updated At", width: 150 },
+    { field: "name", headerName: "Name", width: CELL_WIDTH },
+    { field: "email", headerName: "Email", width: CELL_WIDTH },
+    { field: "number", headerName: "Number", width: CELL_WIDTH },
+    {
+      field: "numberOfService",
+      headerName: "Number Of Service",
+      width: CELL_WIDTH,
+    },
+    {
+      field: "accountVerified",
+      headerName: "Account Verified",
+      width: CELL_WIDTH,
+    },
+    { field: "lastLoggedIn", headerName: "Last Logged In", width: CELL_WIDTH },
+    { field: "createdAt", headerName: "Created At", width: CELL_WIDTH },
+    { field: "updatedAt", headerName: "Updated At", width: CELL_WIDTH },
   ]);
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -45,7 +66,7 @@ export default function UAM() {
         LoadingOverlay: LinearProgress,
       }}
       pageSize={10}
-      rowsPerPageOptions={[5]}
+      rowsPerPageOptions={[10]}
       checkboxSelection
       loading={loading}
     />

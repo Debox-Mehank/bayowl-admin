@@ -132,6 +132,7 @@ function Layout({ typeRole }: { typeRole: string }) {
   const logoutFunc = async () => {
     setLoading(true);
     await logout();
+    localStorage.clear();
     setLoading(false);
     window.location.reload();
   };

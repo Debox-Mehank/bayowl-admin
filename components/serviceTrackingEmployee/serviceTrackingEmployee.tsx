@@ -6,6 +6,7 @@ import {
   MenuItem,
   Modal,
   Select,
+  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -52,192 +53,19 @@ interface refFileList {
 }
 
 export default function ServiceTrackingEmployee() {
-  const [filesArray, setFilesArray] = useState<File>();
-  const [refArray, setrefArray] = useState<refFileList[]>([]);
+  const [filesArray, setFilesArray] = useState<File[]>();
   const [getS3URL] = useGetS3SignedUrlLazyQuery();
   const [initFileUploadQuery] = useInitFileUploadLazyQuery();
   const [multipartPresignedQuery] = useGetMultipartPreSignedUrlsLazyQuery();
   const [finalizeMultipartUploadQuery] = useFinalizeMultipartUploadLazyQuery();
-  //   const [uploadFilesForServiceQuery] = useUploadFilesForServiceLazyQuery();
-  const handleRefFilesSubmit = async (serviceId: string): Promise<string[]> => {
-    if (refArray.length > 0) {
-      let finalRefArr: string[] = [];
-      const filesUploadedForRef = refArray
-        .filter((el) => el.isAddedByUpload)
-        .map((el) => el.file!);
-      const filesLinkForRef = refArray
-        .filter((el) => !el.isAddedByUpload)
-        .map((el) => el.url!);
-      if (filesUploadedForRef.length > 0) {
-        // Final zip file name uploaded to aws
-        const refFileName = `referenceFiles_${serviceId}`;
-
-        // Creating the zip file
-        // const zipInit = new JSZip();
-        // const zip = zipInit.folder("files");
-
-        // if (!zip) {
-        //   return [];
-        // }
-
-        // filesArray.forEach((file) => {
-        //   zip.file(`${file.name}`, file);
-        // });
-        const file = filesArray!;
-
-        let finalUploadedUrl: undefined | string = undefined;
-
-        // Check if file size is bigger than 5 MB
-        if (formatBytesNumber(file.size) > 5) {
-          // Initializing the upload from server
-          setLoading(true);
-          const { data: initData, error: initError } =
-            await initFileUploadQuery({
-              variables: { fileName: refFileName + ".zip" },
-            });
-
-          // Handling Errors
-          if (initError) {
-            return [];
-          }
-          if (!initData || !initData.initFileUpload) {
-            return [];
-          }
-
-          // Multipart upload part (dividing the file into chunks and upload the chunks)
-          const chunkSize = 10 * 1024 * 1024; // 10 MiB
-          const chunkCount = Math.floor(file.size / chunkSize) + 1;
-
-          // Getting multiple urls
-          const { data: multipleSignedUrlData, error: multipleSignedUrlError } =
-            await multipartPresignedQuery({
-              variables: {
-                fileId: initData.initFileUpload.fileId ?? "",
-                fileKey: initData.initFileUpload.fileKey ?? "",
-                parts: chunkCount,
-              },
-            });
-
-          // Handling Errors
-          if (multipleSignedUrlError) {
-            return [];
-          }
-          if (
-            !multipleSignedUrlData ||
-            !multipleSignedUrlData.getMultipartPreSignedUrls
-          ) {
-            return [];
-          }
-
-          let multipartUrls: MultipartSignedUrlResponse[] =
-            multipleSignedUrlData.getMultipartPreSignedUrls.map((el) => ({
-              signedUrl: el.signedUrl,
-              PartNumber: el.PartNumber,
-            }));
-
-          let partsUploadArray: FinalMultipartUploadPartsInput[] = [];
-
-          for (let index = 1; index < chunkCount + 1; index++) {
-            let start = (index - 1) * chunkSize;
-            let end = index * chunkSize;
-            let fileBlob =
-              index < chunkCount ? file.slice(start, end) : file.slice(start);
-            let signedUrl = multipartUrls[index - 1].signedUrl ?? "";
-            let partNumber = multipartUrls[index - 1].PartNumber ?? 0;
-
-            let uploadChunk = await fetch(signedUrl, {
-              method: "PUT",
-              body: fileBlob,
-            });
-            let etag = uploadChunk.headers.get("etag");
-            partsUploadArray.push({
-              ETag: etag ?? "",
-              PartNumber: partNumber,
-            });
-          }
-
-          // Finalize multipart upload
-          const { data: finalMultipartData, error: finalMultipartError } =
-            await finalizeMultipartUploadQuery({
-              variables: {
-                input: {
-                  fileId: initData.initFileUpload.fileId ?? "",
-                  fileKey: initData.initFileUpload.fileKey ?? "",
-                  parts: partsUploadArray,
-                },
-              },
-            });
-
-          // Handling Errors
-          if (finalMultipartError) {
-            return [];
-          }
-          if (
-            !finalMultipartData ||
-            !finalMultipartData.finalizeMultipartUpload
-          ) {
-            return [];
-          }
-
-          finalUploadedUrl = finalMultipartData.finalizeMultipartUpload;
-        } else {
-          // Direct Upload The Zip File To S3 using pre signed url
-          const { data: s3Url, error: s3Error } = await getS3URL({
-            variables: { fileName: refFileName },
-          });
-
-          // Handling Errors
-          if (s3Error) {
-            return [];
-          }
-          if (!s3Url || !s3Url.getS3SignedURL) {
-            return [];
-          }
-
-          await fetch(s3Url.getS3SignedURL, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-            body: file,
-          });
-          const imageUrl = s3Url.getS3SignedURL.split("?")[0];
-
-          finalUploadedUrl = imageUrl;
-        }
-
-        // Update user status and uploadedFiles Array
-        if (!finalUploadedUrl) {
-          return [];
-        }
-
-        finalRefArr.push(finalUploadedUrl);
-      }
-      return [...filesLinkForRef, ...finalRefArr];
-    }
-    return [];
-  };
   const [addDeliveryFile] = useAddDeliveryFilesLazyQuery();
   const handleUploadSubmit = async (e: any, serviceId: string) => {
     try {
       // For showing the upload progess
-      setFilesArray(e.target.files[0]);
       let percentage: number | undefined = undefined;
       // Final zip file name uploaded to aws
-      const finalFileName = `uploadedFiles_${serviceId}`;
-
-      // Creating the zip file
-      //   const zipInit = new JSZip();
-      //   const zip = zipInit.folder("files");
-
-      //   if (!zip) {
-      //     return;
-      //   }
-
-      //   filesArray!.forEach((file) => {
-      //     zip.file(`${file.name}`, file);
-      //   });
-      const file = filesArray!;
+      const finalFileName = `deliveredFiles_${serviceId}`;
+      const file = filesArray![0];
 
       let finalUploadedUrl: undefined | string = undefined;
 
@@ -365,8 +193,6 @@ export default function ServiceTrackingEmployee() {
         return;
       }
 
-      const refArr = await handleRefFilesSubmit(serviceId);
-
       const { data, error } = await addDeliveryFile({
         variables: {
           serviceId: serviceId?.toString() ?? "",
@@ -383,6 +209,11 @@ export default function ServiceTrackingEmployee() {
         setLoading(false);
         return;
       }
+
+      setLoading(false);
+      setOpenUpload(false);
+      setSnackMessage("Files Uploaded Successfully");
+      setShowSnack(true);
     } catch (error: any) {}
   };
   const [confirmUpload] = useConfirmUploadLazyQuery();
@@ -401,12 +232,18 @@ export default function ServiceTrackingEmployee() {
         return (
           <Button
             variant="contained"
-            // onClick={() => downloadFileFunc(cellValues.row.uploadedFiles[0])}
+            onClick={() => {
+              const downloadA = document.createElement("a");
+              downloadA.href = String(cellValues.row.uploadedFiles[0]);
+              downloadA.download = "true";
+              downloadA.click();
+            }}
           >
-            {/* <a href={String(cellValues.row.uploadedFiles[0])} download> */}
             Download
-            {/* </a> */}
           </Button>
+          // <a href={String(cellValues.row.uploadedFiles[0])} download>
+          //   Download
+          // </a>
         );
       },
     },
@@ -460,24 +297,9 @@ export default function ServiceTrackingEmployee() {
       renderCell: (cellValues) => {
         return (
           <>
-            <label htmlFor="contained-button-file">
-              <input
-                // style={{ display: "none" }}
-                ref={(input) => {
-                  // assigns a reference so we can trigger it later
-                  inputFile = input!;
-                }}
-                accept=".wav"
-                id="contained-button-file"
-                type="file"
-                onChange={(e) => {
-                  setFilesArray(e.target.files![0]);
-                }}
-              />
-            </label>
             <Button
               variant="contained"
-              onClick={(e) => handleUploadSubmit(e, cellValues.row.id)}
+              onClick={(e) => uploadOnOpen(cellValues.row._id)}
               disabled={
                 cellValues.row.statusType !== UserServiceStatus.Workinprogress
               }
@@ -605,6 +427,15 @@ export default function ServiceTrackingEmployee() {
     setReuploadedNote("");
     setId("");
   };
+  const [openUpload, setOpenUpload] = useState<boolean>(false);
+  const uploadOnOpen = (serviceId: string) => {
+    setId(serviceId);
+    setOpenUpload(true);
+  };
+  const uploadOnClose = () => {
+    setLoading(false);
+    setOpenUpload(false);
+  };
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -625,6 +456,8 @@ export default function ServiceTrackingEmployee() {
     fetchServices();
   }, []);
   const [loading, setLoading] = useState<boolean>(false);
+  const [showSnack, setShowSnack] = useState<boolean>(false);
+  const [snackMessage, setSnackMessage] = useState<string>();
   // const [servicesData, setServicesData] = useState<Services[]>([]);
   return (
     <>
@@ -640,6 +473,47 @@ export default function ServiceTrackingEmployee() {
         checkboxSelection
         loading={loading}
       />
+      <Modal
+        open={openUpload}
+        onClose={uploadOnClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Stack spacing={2}>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Upload a .zip File
+            </Typography>
+            <label htmlFor="contained-button-file">
+              <input
+                ref={(input) => {
+                  inputFile = input!;
+                }}
+                accept={".zip"}
+                id="contained-button-file"
+                type="file"
+                onChange={(e) => {
+                  if (e.target.files) {
+                    const fileList = e.target.files;
+                    let finalFileArr: File[] = [];
+                    for (const file of Array.from(fileList)) {
+                      finalFileArr.push(file);
+                    }
+                    setFilesArray(finalFileArr);
+                  }
+                }}
+              />
+            </label>
+            <LoadingButton
+              variant="contained"
+              onClick={(e) => handleUploadSubmit(e, id)}
+              loading={loadingButton}
+            >
+              Submit
+            </LoadingButton>
+          </Stack>
+        </Box>
+      </Modal>
       <Modal
         open={open}
         onClose={onClose}
@@ -669,6 +543,13 @@ export default function ServiceTrackingEmployee() {
           </Stack>
         </Box>
       </Modal>
+      <Snackbar
+        open={showSnack}
+        autoHideDuration={4000}
+        onClose={() => setShowSnack(false)}
+        message={snackMessage}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      />
     </>
   );
 }

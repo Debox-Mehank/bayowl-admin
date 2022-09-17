@@ -15,6 +15,11 @@ a {
   box-sizing: border-box;
 }
 
+/* .MuiDataGrid-root .MuiDataGrid-cell {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+} */
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;

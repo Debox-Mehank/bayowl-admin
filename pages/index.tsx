@@ -8,8 +8,27 @@ const Home: NextPage = () => {
   const [meAdmin] = useMeAdminLazyQuery();
   const [pageDecider, setPageDecider] = useState<string>("");
   const getRole = async () => {
-    const response = await meAdmin();
-    setPageDecider(response.data!.meAdmin);
+    try {
+      const response = await meAdmin();
+
+      if (response.error) {
+        console.log("here");
+        return;
+      }
+
+      if (!response.data || !response.data.meAdmin) {
+        return;
+      }
+
+      localStorage.setItem("admin", JSON.stringify(response.data?.meAdmin));
+      setPageDecider(
+        response.data!.meAdmin?.name
+          ? response.data?.meAdmin.type ?? ""
+          : "false"
+      );
+    } catch (error: any) {
+      setPageDecider("false");
+    }
   };
   useEffect(() => {
     getRole();

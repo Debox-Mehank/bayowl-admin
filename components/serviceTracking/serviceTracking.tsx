@@ -22,9 +22,11 @@ import {
   useApproveProjectLazyQuery,
   useAssignServiceMutation,
   useGetAllServiceForEmployeeLazyQuery,
+  useGetAllServiceForMasterLazyQuery,
   UserServices,
   UserServiceStatus,
 } from "../../generated/graphql";
+import moment from "moment";
 
 const style = {
   position: "absolute",
@@ -62,8 +64,16 @@ export default function ServiceTracking() {
       width: 150,
       renderCell: (cellValues) => {
         return (
-          <Button variant="contained" onClick={() => assignService(cellValues)}>
-            Assign
+          <Button
+            disabled={
+              cellValues.row.statusType === UserServiceStatus.Underreview
+                ? false
+                : true
+            }
+            variant="contained"
+            onClick={() => assignService(cellValues)}
+          >
+            {cellValues.row.assignedTo ? "Re-Assign" : "Assign"}
           </Button>
         );
       },
@@ -75,6 +85,12 @@ export default function ServiceTracking() {
       renderCell: (cellValues) => {
         return (
           <Button
+            onClick={() => {
+              const downloadA = document.createElement("a");
+              downloadA.href = String(cellValues.row.uploadedFiles[0]);
+              downloadA.download = "true";
+              downloadA.click();
+            }}
             disabled={
               cellValues.row.statusType ===
               UserServiceStatus.Underreviewinternal
@@ -134,6 +150,7 @@ export default function ServiceTracking() {
     { field: "paid", headerName: "Paid", width: 150 },
     { field: "allotedTo", headerName: "Assigned To", width: 150 },
     { field: "allotedBy", headerName: "Assigned By", width: 150 },
+    { field: "assignedTime", headerName: "Assigned At", width: 150 },
     { field: "statusType", headerName: "Status Type", width: 150 },
     { field: "mainCategory", headerName: "Main Category", width: 150 },
     { field: "subCategory", headerName: "Sub Category", width: 150 },
@@ -208,7 +225,7 @@ export default function ServiceTracking() {
       width: 150,
     },
   ];
-  const [getAllServiceForEmployee] = useGetAllServiceForEmployeeLazyQuery();
+  const [getAllServiceForEmployee] = useGetAllServiceForMasterLazyQuery();
   const [getAllEmployees] = useAllEmployeeLazyQuery();
   const [assignServiceForEmployee] = useAssignServiceMutation();
   const [allEmp, setAllEmp] = useState<Admin[]>([]);
@@ -226,7 +243,27 @@ export default function ServiceTracking() {
       },
     });
 
-    if (response) onClose();
+    if (response) {
+      const assignTo = allEmp.find((el) => el._id === emp);
+      const assignBy = JSON.parse(localStorage.getItem("admin")!);
+
+      const dataArr = [...data];
+      const newArr = dataArr.map((el) => {
+        if (el._id === id) {
+          return {
+            ...el,
+            allotedTo: assignTo?.name,
+            allotedBy: assignBy.name,
+            assignedTime: moment().format("MMM Do YY, hh:mm"),
+          };
+        } else {
+          return { ...el };
+        }
+      });
+      console.log(newArr);
+      setData(newArr);
+      onClose();
+    }
   };
   const [data, setData] = useState<UserServices[]>([]);
   const [open, setOpen] = useState<boolean>(false);
@@ -242,14 +279,19 @@ export default function ServiceTracking() {
   useEffect(() => {
     const fetchServices = async () => {
       setLoading(true);
-      const response = await getAllServiceForEmployee();
-      if (response.data?.getAllServiceForEmployee) {
+      const response = await getAllServiceForEmployee({
+        fetchPolicy: "network-only",
+      });
+      if (response.data?.getAllServiceForMaster) {
         setData(
-          response.data?.getAllServiceForEmployee.map((ind) => ({
+          response.data?.getAllServiceForMaster.map((ind) => ({
             ...ind,
             id: ind._id,
             allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
             allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",
+            assignedTime: ind.assignedTime
+              ? moment(ind.assignedTime).format("MMM Do YY, hh:mm")
+              : "",
           })) ?? []
         );
       }

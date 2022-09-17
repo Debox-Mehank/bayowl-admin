@@ -1,3 +1,58 @@
+fragment services on UserServices {
+  _id
+  mainCategory
+  subCategory
+  serviceName
+  subService
+  subService2
+  estimatedTime
+  price
+  mixVocalTuningBasic
+  mixVocalTuningAdvanced
+  mixProcessingReverbs
+  mixProcessingDelays
+  mixProcessingOtherFx
+  addOn {
+    type
+    value
+    qty
+  }
+  deliveryDays
+  updatedAt
+  createdAt
+  projectName
+  paid
+  assignedTo {
+    _id
+    name
+  }
+  assignedBy {
+    _id
+    name
+  }
+  statusType
+  setOfRevisions
+  inputTrackLimit
+  referenceFiles
+  revisionFiles {
+    file
+    description
+    revision
+  }
+  status {
+    name
+    state
+  }
+  deliveryFileFormat
+  uploadFileFormat
+  uploadedFiles
+  reupload
+  notes
+  submissionDate
+  estDeliveryDate
+  assignedTime
+}
+
 query GetAllService {
   getAllService {
     _id
@@ -109,55 +164,13 @@ query AllAdmins {
 
 query GetAllServiceForEmployee {
   getAllServiceForEmployee {
-    _id
-    mainCategory
-    subCategory
-    serviceName
-    subService
-    subService2
-    estimatedTime
-    price
-    mixVocalTuningBasic
-    mixVocalTuningAdvanced
-    mixProcessingReverbs
-    mixProcessingDelays
-    mixProcessingOtherFx
-    addOn {
-      type
-      value
-      qty
-    }
-    deliveryDays
-    updatedAt
-    createdAt
-    projectName
-    paid
-    assignedTo {
-      name
-    }
-    assignedBy {
-      name
-    }
-    statusType
-    setOfRevisions
-    inputTrackLimit
-    referenceFiles
-    revisionFiles {
-      file
-      description
-      revision
-    }
-    status {
-      name
-      state
-    }
-    deliveryFileFormat
-    uploadFileFormat
-    uploadedFiles
-    reupload
-    notes
-    submissionDate
-    estDeliveryDate
+    ...services
+  }
+}
+
+query GetAllServiceForMaster {
+  getAllServiceForMaster {
+    ...services
   }
 }
 
@@ -264,7 +277,11 @@ query AdminLogin($input: AdminLoginInput!) {
 }
 
 query MeAdmin {
-  meAdmin
+  meAdmin {
+    _id
+    name
+    type
+  }
 }
 
 mutation AddAdmin($input: AdminRegisterInput!) {
