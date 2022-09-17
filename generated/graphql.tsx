@@ -76,6 +76,12 @@ export type DashboardContentInput = {
   text: Scalars['String'];
 };
 
+export type DashboardInterfaceClass = {
+  __typename?: 'DashboardInterfaceClass';
+  data: Scalars['Float'];
+  label: Scalars['String'];
+};
+
 export type FileUploadResponse = {
   __typename?: 'FileUploadResponse';
   fileId?: Maybe<Scalars['String']>;
@@ -147,6 +153,7 @@ export type Query = {
   allDashboardContent: Array<DashboardContent>;
   allEmployee: Array<Admin>;
   completeAccount: Scalars['Boolean'];
+  dashboardMet: Array<DashboardInterfaceClass>;
   finalizeMultipartUpload?: Maybe<Scalars['String']>;
   getAllPayment: Array<Payment>;
   getAllService: Array<Services>;
@@ -492,6 +499,18 @@ export type AllEmployeeQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type AllEmployeeQuery = { __typename?: 'Query', allEmployee: Array<{ __typename?: 'Admin', _id?: string | null, name?: string | null }> };
 
+export type AllDashboardContentQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AllDashboardContentQuery = { __typename?: 'Query', allDashboardContent: Array<{ __typename?: 'DashboardContent', _id: string, text: string, image: string, active: boolean, createdAt: any, updatedAt: any, lastUpdatedBy: { __typename?: 'Admin', name?: string | null }, createdBy: { __typename?: 'Admin', name?: string | null } }> };
+
+export type AddDashboardContentQueryVariables = Exact<{
+  input: DashboardContentInput;
+}>;
+
+
+export type AddDashboardContentQuery = { __typename?: 'Query', addDashboardContent: { __typename?: 'DashboardContent', _id: string, text: string, image: string, active: boolean, createdAt: any, updatedAt: any, lastUpdatedBy: { __typename?: 'Admin', name?: string | null }, createdBy: { __typename?: 'Admin', name?: string | null } } };
+
 export type AssignServiceMutationVariables = Exact<{
   adminId: Scalars['String'];
   serviceId: Scalars['String'];
@@ -499,6 +518,16 @@ export type AssignServiceMutationVariables = Exact<{
 
 
 export type AssignServiceMutation = { __typename?: 'Mutation', assignService: boolean };
+
+export type DashboardQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type DashboardQuery = { __typename?: 'Query', dashboardMet: Array<{ __typename?: 'DashboardInterfaceClass', label: string, data: number }> };
+
+export type LogoutQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type LogoutQuery = { __typename?: 'Query', adminLogout: boolean };
 
 export type AdminLoginQueryVariables = Exact<{
   input: AdminLoginInput;
@@ -842,6 +871,97 @@ export function useAllEmployeeLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
 export type AllEmployeeQueryHookResult = ReturnType<typeof useAllEmployeeQuery>;
 export type AllEmployeeLazyQueryHookResult = ReturnType<typeof useAllEmployeeLazyQuery>;
 export type AllEmployeeQueryResult = Apollo.QueryResult<AllEmployeeQuery, AllEmployeeQueryVariables>;
+export const AllDashboardContentDocument = gql`
+    query AllDashboardContent {
+  allDashboardContent {
+    _id
+    lastUpdatedBy {
+      name
+    }
+    createdBy {
+      name
+    }
+    text
+    image
+    active
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useAllDashboardContentQuery__
+ *
+ * To run a query within a React component, call `useAllDashboardContentQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAllDashboardContentQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAllDashboardContentQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useAllDashboardContentQuery(baseOptions?: Apollo.QueryHookOptions<AllDashboardContentQuery, AllDashboardContentQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AllDashboardContentQuery, AllDashboardContentQueryVariables>(AllDashboardContentDocument, options);
+      }
+export function useAllDashboardContentLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AllDashboardContentQuery, AllDashboardContentQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AllDashboardContentQuery, AllDashboardContentQueryVariables>(AllDashboardContentDocument, options);
+        }
+export type AllDashboardContentQueryHookResult = ReturnType<typeof useAllDashboardContentQuery>;
+export type AllDashboardContentLazyQueryHookResult = ReturnType<typeof useAllDashboardContentLazyQuery>;
+export type AllDashboardContentQueryResult = Apollo.QueryResult<AllDashboardContentQuery, AllDashboardContentQueryVariables>;
+export const AddDashboardContentDocument = gql`
+    query AddDashboardContent($input: DashboardContentInput!) {
+  addDashboardContent(input: $input) {
+    _id
+    lastUpdatedBy {
+      name
+    }
+    createdBy {
+      name
+    }
+    text
+    image
+    active
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useAddDashboardContentQuery__
+ *
+ * To run a query within a React component, call `useAddDashboardContentQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAddDashboardContentQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAddDashboardContentQuery({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useAddDashboardContentQuery(baseOptions: Apollo.QueryHookOptions<AddDashboardContentQuery, AddDashboardContentQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AddDashboardContentQuery, AddDashboardContentQueryVariables>(AddDashboardContentDocument, options);
+      }
+export function useAddDashboardContentLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AddDashboardContentQuery, AddDashboardContentQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AddDashboardContentQuery, AddDashboardContentQueryVariables>(AddDashboardContentDocument, options);
+        }
+export type AddDashboardContentQueryHookResult = ReturnType<typeof useAddDashboardContentQuery>;
+export type AddDashboardContentLazyQueryHookResult = ReturnType<typeof useAddDashboardContentLazyQuery>;
+export type AddDashboardContentQueryResult = Apollo.QueryResult<AddDashboardContentQuery, AddDashboardContentQueryVariables>;
 export const AssignServiceDocument = gql`
     mutation AssignService($adminId: String!, $serviceId: String!) {
   assignService(adminId: $adminId, serviceId: $serviceId)
@@ -874,6 +994,73 @@ export function useAssignServiceMutation(baseOptions?: Apollo.MutationHookOption
 export type AssignServiceMutationHookResult = ReturnType<typeof useAssignServiceMutation>;
 export type AssignServiceMutationResult = Apollo.MutationResult<AssignServiceMutation>;
 export type AssignServiceMutationOptions = Apollo.BaseMutationOptions<AssignServiceMutation, AssignServiceMutationVariables>;
+export const DashboardDocument = gql`
+    query Dashboard {
+  dashboardMet {
+    label
+    data
+  }
+}
+    `;
+
+/**
+ * __useDashboardQuery__
+ *
+ * To run a query within a React component, call `useDashboardQuery` and pass it any options that fit your needs.
+ * When your component renders, `useDashboardQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useDashboardQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useDashboardQuery(baseOptions?: Apollo.QueryHookOptions<DashboardQuery, DashboardQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<DashboardQuery, DashboardQueryVariables>(DashboardDocument, options);
+      }
+export function useDashboardLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<DashboardQuery, DashboardQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<DashboardQuery, DashboardQueryVariables>(DashboardDocument, options);
+        }
+export type DashboardQueryHookResult = ReturnType<typeof useDashboardQuery>;
+export type DashboardLazyQueryHookResult = ReturnType<typeof useDashboardLazyQuery>;
+export type DashboardQueryResult = Apollo.QueryResult<DashboardQuery, DashboardQueryVariables>;
+export const LogoutDocument = gql`
+    query Logout {
+  adminLogout
+}
+    `;
+
+/**
+ * __useLogoutQuery__
+ *
+ * To run a query within a React component, call `useLogoutQuery` and pass it any options that fit your needs.
+ * When your component renders, `useLogoutQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useLogoutQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useLogoutQuery(baseOptions?: Apollo.QueryHookOptions<LogoutQuery, LogoutQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<LogoutQuery, LogoutQueryVariables>(LogoutDocument, options);
+      }
+export function useLogoutLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<LogoutQuery, LogoutQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<LogoutQuery, LogoutQueryVariables>(LogoutDocument, options);
+        }
+export type LogoutQueryHookResult = ReturnType<typeof useLogoutQuery>;
+export type LogoutLazyQueryHookResult = ReturnType<typeof useLogoutLazyQuery>;
+export type LogoutQueryResult = Apollo.QueryResult<LogoutQuery, LogoutQueryVariables>;
 export const AdminLoginDocument = gql`
     query AdminLogin($input: AdminLoginInput!) {
   adminLogin(input: $input)

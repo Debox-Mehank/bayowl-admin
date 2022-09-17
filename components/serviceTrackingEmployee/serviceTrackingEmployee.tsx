@@ -19,9 +19,6 @@ import {
   UserServices,
 } from "../../generated/graphql";
 
-import Fs from "fs";
-import Https from "https";
-
 const style = {
   position: "absolute",
   top: "50%",
@@ -33,36 +30,8 @@ const style = {
   p: 4,
 };
 
-async function downloadFile(url: string, targetFile: string) {
-  return await new Promise((resolve, reject) => {
-    Https.get(url, (response) => {
-      const code = response.statusCode ?? 0;
-
-      if (code >= 400) {
-        return reject(new Error(response.statusMessage));
-      }
-
-      // handle redirects
-      if (code > 300 && code < 400 && !!response.headers.location) {
-        return downloadFile(response.headers.location, targetFile);
-      }
-
-      // save the file to disk
-      const fileWriter = Fs.createWriteStream(targetFile).on("finish", () => {
-        resolve({});
-      });
-
-      response.pipe(fileWriter);
-    }).on("error", (error) => {
-      reject(error);
-    });
-  });
-}
-
 export default function ServiceTrackingEmployee() {
-  const downloadFileFunc = async (fileUrl: string) => {
-    await downloadFile(fileUrl, "/Download");
-  };
+  const requestReupload = () => {};
   const columns: GridColDef[] = [
     {
       field: "download",
@@ -72,24 +41,36 @@ export default function ServiceTrackingEmployee() {
         return (
           <Button
             variant="contained"
-            onClick={() => downloadFileFunc(cellValues.row.uploadedFiles[0])}
+            // onClick={() => downloadFileFunc(cellValues.row.uploadedFiles[0])}
           >
             Download
           </Button>
         );
       },
     },
+    // {
+    //   field: "Request Reupload",
+    //   headerName: "Request Reupload",
+    //   width: 150,
+    //   renderCell: (cellValues) => {
+    //     return (
+    //       <Button
+    //         variant="contained"
+    //         onClick={() => requestReupload(cellValues.row.id)}
+    //       >
+    //         Download
+    //       </Button>
+    //     );
+    //   },
+    // },
     { field: "projectName", headerName: "Project Name", width: 150 },
     { field: "paid", headerName: "Paid", width: 150 },
-    { field: "allotedTo", headerName: "Assigned To", width: 150 },
-    { field: "allotedBy", headerName: "Assigned By", width: 150 },
     { field: "statusType", headerName: "Status Type", width: 150 },
     { field: "mainCategory", headerName: "Main Category", width: 150 },
     { field: "subCategory", headerName: "Sub Category", width: 150 },
     { field: "serviceName", headerName: "Service Name", width: 150 },
     { field: "subService", headerName: "Sub Service", width: 150 },
     { field: "subService2", headerName: "Sub Service 2", width: 150 },
-    { field: "for", headerName: "For", width: 150 },
     { field: "description", headerName: "Description", width: 150 },
     {
       field: "estimatedTime",

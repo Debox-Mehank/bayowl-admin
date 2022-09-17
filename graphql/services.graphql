@@ -168,8 +168,53 @@ query AllEmployee {
   }
 }
 
+query AllDashboardContent {
+  allDashboardContent {
+    _id
+    lastUpdatedBy {
+      name
+    }
+    createdBy {
+      name
+    }
+    text
+    image
+    active
+    createdAt
+    updatedAt
+  }
+}
+
+query AddDashboardContent($input: DashboardContentInput!) {
+  addDashboardContent(input: $input) {
+    _id
+    lastUpdatedBy {
+      name
+    }
+    createdBy {
+      name
+    }
+    text
+    image
+    active
+    createdAt
+    updatedAt
+  }
+}
+
 mutation AssignService($adminId: String!, $serviceId: String!) {
   assignService(adminId: $adminId, serviceId: $serviceId)
+}
+
+query Dashboard {
+  dashboardMet {
+    label
+    data
+  }
+}
+
+query Logout {
+  adminLogout
 }
 
 query AdminLogin($input: AdminLoginInput!) {
