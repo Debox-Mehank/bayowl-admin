@@ -19,7 +19,10 @@ import Payments from "../payments/payments";
 import TAM from "../tam/tam";
 import ServiceTracking from "../serviceTracking/serviceTracking";
 import ServiceTrackingEmployee from "../serviceTrackingEmployee/serviceTrackingEmployee";
-
+import DashboardContentPage from "../dashboardContent/dashboardContent";
+import Dashboard from "../dashboard/dashboard";
+import { LoadingButton } from "@mui/lab";
+import { useLogoutLazyQuery } from "../../generated/graphql";
 const drawerWidth: number = 240;
 
 interface AppBarProps extends MuiAppBarProps {
@@ -36,11 +39,13 @@ const sideMenuItemEmployee: ListOfService[] = [
 ];
 
 const sideMenuItemMaster: ListOfService[] = [
+  ListOfService.Dashboard,
   ListOfService.Services,
   ListOfService.UAM,
   ListOfService.Payments,
   ListOfService.TAM,
   ListOfService.ServiceTracking,
+  ListOfService.DashboardContent,
 ];
 
 const AppBar = styled(MuiAppBar, {
@@ -87,17 +92,18 @@ const Drawer = styled(MuiDrawer, {
   },
 }));
 
-const mdTheme = createTheme();
-
 function Layout({ typeRole }: { typeRole: string }) {
   const [open, setOpen] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [currentService, setCurrentService] = useState<ListOfService>(
     typeRole === "master"
-      ? ListOfService.Services
+      ? ListOfService.Dashboard
       : typeRole === "manager"
       ? ListOfService.UAM
       : ListOfService.ServiceTrackingEmployee
   );
+
+  const [logout] = useLogoutLazyQuery();
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -116,9 +122,19 @@ function Layout({ typeRole }: { typeRole: string }) {
         return <ServiceTracking />;
       case ListOfService.ServiceTrackingEmployee:
         return <ServiceTrackingEmployee />;
+      case ListOfService.DashboardContent:
+        return <DashboardContentPage />;
+      case ListOfService.Dashboard:
+        return <Dashboard />;
     }
   }
 
+  const logoutFunc = async () => {
+    setLoading(true);
+    await logout();
+    setLoading(false);
+    window.location.reload();
+  };
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -149,6 +165,14 @@ function Layout({ typeRole }: { typeRole: string }) {
           >
             Dashboard
           </Typography>
+          <LoadingButton
+            variant="outlined"
+            style={{ color: "white", borderColor: "white" }}
+            onClick={logoutFunc}
+            loading={loading}
+          >
+            Logout
+          </LoadingButton>
         </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>
