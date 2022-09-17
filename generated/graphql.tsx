@@ -147,12 +147,15 @@ export type Query = {
   __typename?: 'Query';
   activeDashboardContent: Array<DashboardContent>;
   addDashboardContent: DashboardContent;
+  addDeliverFiles: Scalars['Boolean'];
   adminLogin: Scalars['Boolean'];
   adminLogout: Scalars['Boolean'];
   allAdmins: Array<Admin>;
   allDashboardContent: Array<DashboardContent>;
   allEmployee: Array<Admin>;
+  approveProject: Scalars['Boolean'];
   completeAccount: Scalars['Boolean'];
+  confirmUpload: Scalars['Boolean'];
   dashboardMet: Array<DashboardInterfaceClass>;
   finalizeMultipartUpload?: Maybe<Scalars['String']>;
   getAllPayment: Array<Payment>;
@@ -184,8 +187,19 @@ export type QueryAddDashboardContentArgs = {
 };
 
 
+export type QueryAddDeliverFilesArgs = {
+  serviceId: Scalars['String'];
+  url: Scalars['String'];
+};
+
+
 export type QueryAdminLoginArgs = {
   input: AdminLoginInput;
+};
+
+
+export type QueryApproveProjectArgs = {
+  serviceId: Scalars['String'];
 };
 
 
@@ -195,6 +209,12 @@ export type QueryCompleteAccountArgs = {
   number: Scalars['String'];
   password: Scalars['String'];
   token: Scalars['String'];
+};
+
+
+export type QueryConfirmUploadArgs = {
+  deliveryDays: Scalars['Float'];
+  serviceId: Scalars['String'];
 };
 
 
@@ -393,6 +413,7 @@ export enum UserServiceStatus {
   Revisiondelivered = 'revisiondelivered',
   Revisionrequest = 'revisionrequest',
   Underreview = 'underreview',
+  Underreviewinternal = 'underreviewinternal',
   Workinprogress = 'workinprogress'
 }
 
@@ -403,6 +424,7 @@ export type UserServices = {
   assignedBy?: Maybe<Admin>;
   assignedTo?: Maybe<Admin>;
   createdAt?: Maybe<Scalars['DateTime']>;
+  deliveredFiles?: Maybe<Array<Scalars['String']>>;
   deliveryDays?: Maybe<Scalars['Float']>;
   /** File formats for delivery file */
   deliveryFileFormat: Array<Scalars['String']>;
@@ -523,6 +545,67 @@ export type DashboardQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type DashboardQuery = { __typename?: 'Query', dashboardMet: Array<{ __typename?: 'DashboardInterfaceClass', label: string, data: number }> };
+
+export type GetS3SignedUrlQueryVariables = Exact<{
+  fileName: Scalars['String'];
+}>;
+
+
+export type GetS3SignedUrlQuery = { __typename?: 'Query', getS3SignedURL: string };
+
+export type InitFileUploadQueryVariables = Exact<{
+  fileName: Scalars['String'];
+}>;
+
+
+export type InitFileUploadQuery = { __typename?: 'Query', initFileUpload: { __typename?: 'FileUploadResponse', fileId?: string | null, fileKey?: string | null } };
+
+export type GetMultipartPreSignedUrlsQueryVariables = Exact<{
+  parts: Scalars['Float'];
+  fileKey: Scalars['String'];
+  fileId: Scalars['String'];
+}>;
+
+
+export type GetMultipartPreSignedUrlsQuery = { __typename?: 'Query', getMultipartPreSignedUrls: Array<{ __typename?: 'MultipartSignedUrlResponse', signedUrl?: string | null, PartNumber?: number | null }> };
+
+export type ApproveProjectQueryVariables = Exact<{
+  serviceId: Scalars['String'];
+}>;
+
+
+export type ApproveProjectQuery = { __typename?: 'Query', approveProject: boolean };
+
+export type AddDeliveryFilesQueryVariables = Exact<{
+  url: Scalars['String'];
+  serviceId: Scalars['String'];
+}>;
+
+
+export type AddDeliveryFilesQuery = { __typename?: 'Query', addDeliverFiles: boolean };
+
+export type FinalizeMultipartUploadQueryVariables = Exact<{
+  input: FinalMultipartUploadInput;
+}>;
+
+
+export type FinalizeMultipartUploadQuery = { __typename?: 'Query', finalizeMultipartUpload?: string | null };
+
+export type ConfirmUploadQueryVariables = Exact<{
+  deliveryDays: Scalars['Float'];
+  serviceId: Scalars['String'];
+}>;
+
+
+export type ConfirmUploadQuery = { __typename?: 'Query', confirmUpload: boolean };
+
+export type RequestReuploadQueryVariables = Exact<{
+  reuploadNote: Scalars['String'];
+  serviceId: Scalars['String'];
+}>;
+
+
+export type RequestReuploadQuery = { __typename?: 'Query', requestReupload: boolean };
 
 export type LogoutQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1029,6 +1112,281 @@ export function useDashboardLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
 export type DashboardQueryHookResult = ReturnType<typeof useDashboardQuery>;
 export type DashboardLazyQueryHookResult = ReturnType<typeof useDashboardLazyQuery>;
 export type DashboardQueryResult = Apollo.QueryResult<DashboardQuery, DashboardQueryVariables>;
+export const GetS3SignedUrlDocument = gql`
+    query GetS3SignedURL($fileName: String!) {
+  getS3SignedURL(fileName: $fileName)
+}
+    `;
+
+/**
+ * __useGetS3SignedUrlQuery__
+ *
+ * To run a query within a React component, call `useGetS3SignedUrlQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetS3SignedUrlQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetS3SignedUrlQuery({
+ *   variables: {
+ *      fileName: // value for 'fileName'
+ *   },
+ * });
+ */
+export function useGetS3SignedUrlQuery(baseOptions: Apollo.QueryHookOptions<GetS3SignedUrlQuery, GetS3SignedUrlQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetS3SignedUrlQuery, GetS3SignedUrlQueryVariables>(GetS3SignedUrlDocument, options);
+      }
+export function useGetS3SignedUrlLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetS3SignedUrlQuery, GetS3SignedUrlQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetS3SignedUrlQuery, GetS3SignedUrlQueryVariables>(GetS3SignedUrlDocument, options);
+        }
+export type GetS3SignedUrlQueryHookResult = ReturnType<typeof useGetS3SignedUrlQuery>;
+export type GetS3SignedUrlLazyQueryHookResult = ReturnType<typeof useGetS3SignedUrlLazyQuery>;
+export type GetS3SignedUrlQueryResult = Apollo.QueryResult<GetS3SignedUrlQuery, GetS3SignedUrlQueryVariables>;
+export const InitFileUploadDocument = gql`
+    query InitFileUpload($fileName: String!) {
+  initFileUpload(fileName: $fileName) {
+    fileId
+    fileKey
+  }
+}
+    `;
+
+/**
+ * __useInitFileUploadQuery__
+ *
+ * To run a query within a React component, call `useInitFileUploadQuery` and pass it any options that fit your needs.
+ * When your component renders, `useInitFileUploadQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useInitFileUploadQuery({
+ *   variables: {
+ *      fileName: // value for 'fileName'
+ *   },
+ * });
+ */
+export function useInitFileUploadQuery(baseOptions: Apollo.QueryHookOptions<InitFileUploadQuery, InitFileUploadQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<InitFileUploadQuery, InitFileUploadQueryVariables>(InitFileUploadDocument, options);
+      }
+export function useInitFileUploadLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<InitFileUploadQuery, InitFileUploadQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<InitFileUploadQuery, InitFileUploadQueryVariables>(InitFileUploadDocument, options);
+        }
+export type InitFileUploadQueryHookResult = ReturnType<typeof useInitFileUploadQuery>;
+export type InitFileUploadLazyQueryHookResult = ReturnType<typeof useInitFileUploadLazyQuery>;
+export type InitFileUploadQueryResult = Apollo.QueryResult<InitFileUploadQuery, InitFileUploadQueryVariables>;
+export const GetMultipartPreSignedUrlsDocument = gql`
+    query GetMultipartPreSignedUrls($parts: Float!, $fileKey: String!, $fileId: String!) {
+  getMultipartPreSignedUrls(parts: $parts, fileKey: $fileKey, fileId: $fileId) {
+    signedUrl
+    PartNumber
+  }
+}
+    `;
+
+/**
+ * __useGetMultipartPreSignedUrlsQuery__
+ *
+ * To run a query within a React component, call `useGetMultipartPreSignedUrlsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetMultipartPreSignedUrlsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetMultipartPreSignedUrlsQuery({
+ *   variables: {
+ *      parts: // value for 'parts'
+ *      fileKey: // value for 'fileKey'
+ *      fileId: // value for 'fileId'
+ *   },
+ * });
+ */
+export function useGetMultipartPreSignedUrlsQuery(baseOptions: Apollo.QueryHookOptions<GetMultipartPreSignedUrlsQuery, GetMultipartPreSignedUrlsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetMultipartPreSignedUrlsQuery, GetMultipartPreSignedUrlsQueryVariables>(GetMultipartPreSignedUrlsDocument, options);
+      }
+export function useGetMultipartPreSignedUrlsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetMultipartPreSignedUrlsQuery, GetMultipartPreSignedUrlsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetMultipartPreSignedUrlsQuery, GetMultipartPreSignedUrlsQueryVariables>(GetMultipartPreSignedUrlsDocument, options);
+        }
+export type GetMultipartPreSignedUrlsQueryHookResult = ReturnType<typeof useGetMultipartPreSignedUrlsQuery>;
+export type GetMultipartPreSignedUrlsLazyQueryHookResult = ReturnType<typeof useGetMultipartPreSignedUrlsLazyQuery>;
+export type GetMultipartPreSignedUrlsQueryResult = Apollo.QueryResult<GetMultipartPreSignedUrlsQuery, GetMultipartPreSignedUrlsQueryVariables>;
+export const ApproveProjectDocument = gql`
+    query ApproveProject($serviceId: String!) {
+  approveProject(serviceId: $serviceId)
+}
+    `;
+
+/**
+ * __useApproveProjectQuery__
+ *
+ * To run a query within a React component, call `useApproveProjectQuery` and pass it any options that fit your needs.
+ * When your component renders, `useApproveProjectQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useApproveProjectQuery({
+ *   variables: {
+ *      serviceId: // value for 'serviceId'
+ *   },
+ * });
+ */
+export function useApproveProjectQuery(baseOptions: Apollo.QueryHookOptions<ApproveProjectQuery, ApproveProjectQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ApproveProjectQuery, ApproveProjectQueryVariables>(ApproveProjectDocument, options);
+      }
+export function useApproveProjectLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ApproveProjectQuery, ApproveProjectQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ApproveProjectQuery, ApproveProjectQueryVariables>(ApproveProjectDocument, options);
+        }
+export type ApproveProjectQueryHookResult = ReturnType<typeof useApproveProjectQuery>;
+export type ApproveProjectLazyQueryHookResult = ReturnType<typeof useApproveProjectLazyQuery>;
+export type ApproveProjectQueryResult = Apollo.QueryResult<ApproveProjectQuery, ApproveProjectQueryVariables>;
+export const AddDeliveryFilesDocument = gql`
+    query AddDeliveryFiles($url: String!, $serviceId: String!) {
+  addDeliverFiles(url: $url, serviceId: $serviceId)
+}
+    `;
+
+/**
+ * __useAddDeliveryFilesQuery__
+ *
+ * To run a query within a React component, call `useAddDeliveryFilesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAddDeliveryFilesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAddDeliveryFilesQuery({
+ *   variables: {
+ *      url: // value for 'url'
+ *      serviceId: // value for 'serviceId'
+ *   },
+ * });
+ */
+export function useAddDeliveryFilesQuery(baseOptions: Apollo.QueryHookOptions<AddDeliveryFilesQuery, AddDeliveryFilesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AddDeliveryFilesQuery, AddDeliveryFilesQueryVariables>(AddDeliveryFilesDocument, options);
+      }
+export function useAddDeliveryFilesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AddDeliveryFilesQuery, AddDeliveryFilesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AddDeliveryFilesQuery, AddDeliveryFilesQueryVariables>(AddDeliveryFilesDocument, options);
+        }
+export type AddDeliveryFilesQueryHookResult = ReturnType<typeof useAddDeliveryFilesQuery>;
+export type AddDeliveryFilesLazyQueryHookResult = ReturnType<typeof useAddDeliveryFilesLazyQuery>;
+export type AddDeliveryFilesQueryResult = Apollo.QueryResult<AddDeliveryFilesQuery, AddDeliveryFilesQueryVariables>;
+export const FinalizeMultipartUploadDocument = gql`
+    query FinalizeMultipartUpload($input: FinalMultipartUploadInput!) {
+  finalizeMultipartUpload(input: $input)
+}
+    `;
+
+/**
+ * __useFinalizeMultipartUploadQuery__
+ *
+ * To run a query within a React component, call `useFinalizeMultipartUploadQuery` and pass it any options that fit your needs.
+ * When your component renders, `useFinalizeMultipartUploadQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useFinalizeMultipartUploadQuery({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useFinalizeMultipartUploadQuery(baseOptions: Apollo.QueryHookOptions<FinalizeMultipartUploadQuery, FinalizeMultipartUploadQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<FinalizeMultipartUploadQuery, FinalizeMultipartUploadQueryVariables>(FinalizeMultipartUploadDocument, options);
+      }
+export function useFinalizeMultipartUploadLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<FinalizeMultipartUploadQuery, FinalizeMultipartUploadQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<FinalizeMultipartUploadQuery, FinalizeMultipartUploadQueryVariables>(FinalizeMultipartUploadDocument, options);
+        }
+export type FinalizeMultipartUploadQueryHookResult = ReturnType<typeof useFinalizeMultipartUploadQuery>;
+export type FinalizeMultipartUploadLazyQueryHookResult = ReturnType<typeof useFinalizeMultipartUploadLazyQuery>;
+export type FinalizeMultipartUploadQueryResult = Apollo.QueryResult<FinalizeMultipartUploadQuery, FinalizeMultipartUploadQueryVariables>;
+export const ConfirmUploadDocument = gql`
+    query ConfirmUpload($deliveryDays: Float!, $serviceId: String!) {
+  confirmUpload(deliveryDays: $deliveryDays, serviceId: $serviceId)
+}
+    `;
+
+/**
+ * __useConfirmUploadQuery__
+ *
+ * To run a query within a React component, call `useConfirmUploadQuery` and pass it any options that fit your needs.
+ * When your component renders, `useConfirmUploadQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useConfirmUploadQuery({
+ *   variables: {
+ *      deliveryDays: // value for 'deliveryDays'
+ *      serviceId: // value for 'serviceId'
+ *   },
+ * });
+ */
+export function useConfirmUploadQuery(baseOptions: Apollo.QueryHookOptions<ConfirmUploadQuery, ConfirmUploadQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ConfirmUploadQuery, ConfirmUploadQueryVariables>(ConfirmUploadDocument, options);
+      }
+export function useConfirmUploadLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ConfirmUploadQuery, ConfirmUploadQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ConfirmUploadQuery, ConfirmUploadQueryVariables>(ConfirmUploadDocument, options);
+        }
+export type ConfirmUploadQueryHookResult = ReturnType<typeof useConfirmUploadQuery>;
+export type ConfirmUploadLazyQueryHookResult = ReturnType<typeof useConfirmUploadLazyQuery>;
+export type ConfirmUploadQueryResult = Apollo.QueryResult<ConfirmUploadQuery, ConfirmUploadQueryVariables>;
+export const RequestReuploadDocument = gql`
+    query RequestReupload($reuploadNote: String!, $serviceId: String!) {
+  requestReupload(reuploadNote: $reuploadNote, serviceId: $serviceId)
+}
+    `;
+
+/**
+ * __useRequestReuploadQuery__
+ *
+ * To run a query within a React component, call `useRequestReuploadQuery` and pass it any options that fit your needs.
+ * When your component renders, `useRequestReuploadQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useRequestReuploadQuery({
+ *   variables: {
+ *      reuploadNote: // value for 'reuploadNote'
+ *      serviceId: // value for 'serviceId'
+ *   },
+ * });
+ */
+export function useRequestReuploadQuery(baseOptions: Apollo.QueryHookOptions<RequestReuploadQuery, RequestReuploadQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<RequestReuploadQuery, RequestReuploadQueryVariables>(RequestReuploadDocument, options);
+      }
+export function useRequestReuploadLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<RequestReuploadQuery, RequestReuploadQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<RequestReuploadQuery, RequestReuploadQueryVariables>(RequestReuploadDocument, options);
+        }
+export type RequestReuploadQueryHookResult = ReturnType<typeof useRequestReuploadQuery>;
+export type RequestReuploadLazyQueryHookResult = ReturnType<typeof useRequestReuploadLazyQuery>;
+export type RequestReuploadQueryResult = Apollo.QueryResult<RequestReuploadQuery, RequestReuploadQueryVariables>;
 export const LogoutDocument = gql`
     query Logout {
   adminLogout

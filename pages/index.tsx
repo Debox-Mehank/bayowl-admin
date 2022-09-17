@@ -7,12 +7,12 @@ import { useMeAdminLazyQuery } from "../generated/graphql";
 const Home: NextPage = () => {
   const [meAdmin] = useMeAdminLazyQuery();
   const [pageDecider, setPageDecider] = useState<string>("");
+  const getRole = async () => {
+    const response = await meAdmin();
+    setPageDecider(response.data!.meAdmin);
+  };
   useEffect(() => {
-    const useQuery = async () => {
-      const response = await meAdmin();
-      setPageDecider(response.data!.meAdmin);
-    };
-    useQuery();
+    getRole();
   }, []);
   if (pageDecider === "false" || !pageDecider) return <Login />;
   return <Layout typeRole={pageDecider} />;

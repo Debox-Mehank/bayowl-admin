@@ -7,17 +7,31 @@ import {
   Modal,
   Select,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
+import JSZip from "jszip";
+import router from "next/router";
 import { useEffect, useState } from "react";
 import {
   Admin,
   useAllEmployeeLazyQuery,
   useAssignServiceMutation,
   useGetAllServiceForEmployeeLazyQuery,
+  useRequestReuploadLazyQuery,
   UserServices,
+  UserServiceStatus,
+  useConfirmUploadLazyQuery,
+  FinalMultipartUploadPartsInput,
+  MultipartSignedUrlResponse,
+  useFinalizeMultipartUploadLazyQuery,
+  useGetMultipartPreSignedUrlsLazyQuery,
+  useGetS3SignedUrlLazyQuery,
+  useInitFileUploadLazyQuery,
+  useAddDeliveryFilesLazyQuery,
 } from "../../generated/graphql";
+import { formatBytesNumber } from "./utils/formatBytes";
 
 const style = {
   position: "absolute",
@@ -30,8 +44,354 @@ const style = {
   p: 4,
 };
 
+interface refFileList {
+  name?: string;
+  file?: File;
+  url?: string;
+  isAddedByUpload: boolean;
+}
+
 export default function ServiceTrackingEmployee() {
-  const requestReupload = () => {};
+  const [filesArray, setFilesArray] = useState<File>();
+  const [refArray, setrefArray] = useState<refFileList[]>([]);
+  const [getS3URL] = useGetS3SignedUrlLazyQuery();
+  const [initFileUploadQuery] = useInitFileUploadLazyQuery();
+  const [multipartPresignedQuery] = useGetMultipartPreSignedUrlsLazyQuery();
+  const [finalizeMultipartUploadQuery] = useFinalizeMultipartUploadLazyQuery();
+  //   const [uploadFilesForServiceQuery] = useUploadFilesForServiceLazyQuery();
+  const handleRefFilesSubmit = async (serviceId: string): Promise<string[]> => {
+    if (refArray.length > 0) {
+      let finalRefArr: string[] = [];
+      const filesUploadedForRef = refArray
+        .filter((el) => el.isAddedByUpload)
+        .map((el) => el.file!);
+      const filesLinkForRef = refArray
+        .filter((el) => !el.isAddedByUpload)
+        .map((el) => el.url!);
+      if (filesUploadedForRef.length > 0) {
+        // Final zip file name uploaded to aws
+        const refFileName = `referenceFiles_${serviceId}`;
+
+        // Creating the zip file
+        // const zipInit = new JSZip();
+        // const zip = zipInit.folder("files");
+
+        // if (!zip) {
+        //   return [];
+        // }
+
+        // filesArray.forEach((file) => {
+        //   zip.file(`${file.name}`, file);
+        // });
+        const file = filesArray!;
+
+        let finalUploadedUrl: undefined | string = undefined;
+
+        // Check if file size is bigger than 5 MB
+        if (formatBytesNumber(file.size) > 5) {
+          // Initializing the upload from server
+          setLoading(true);
+          const { data: initData, error: initError } =
+            await initFileUploadQuery({
+              variables: { fileName: refFileName + ".zip" },
+            });
+
+          // Handling Errors
+          if (initError) {
+            return [];
+          }
+          if (!initData || !initData.initFileUpload) {
+            return [];
+          }
+
+          // Multipart upload part (dividing the file into chunks and upload the chunks)
+          const chunkSize = 10 * 1024 * 1024; // 10 MiB
+          const chunkCount = Math.floor(file.size / chunkSize) + 1;
+
+          // Getting multiple urls
+          const { data: multipleSignedUrlData, error: multipleSignedUrlError } =
+            await multipartPresignedQuery({
+              variables: {
+                fileId: initData.initFileUpload.fileId ?? "",
+                fileKey: initData.initFileUpload.fileKey ?? "",
+                parts: chunkCount,
+              },
+            });
+
+          // Handling Errors
+          if (multipleSignedUrlError) {
+            return [];
+          }
+          if (
+            !multipleSignedUrlData ||
+            !multipleSignedUrlData.getMultipartPreSignedUrls
+          ) {
+            return [];
+          }
+
+          let multipartUrls: MultipartSignedUrlResponse[] =
+            multipleSignedUrlData.getMultipartPreSignedUrls.map((el) => ({
+              signedUrl: el.signedUrl,
+              PartNumber: el.PartNumber,
+            }));
+
+          let partsUploadArray: FinalMultipartUploadPartsInput[] = [];
+
+          for (let index = 1; index < chunkCount + 1; index++) {
+            let start = (index - 1) * chunkSize;
+            let end = index * chunkSize;
+            let fileBlob =
+              index < chunkCount ? file.slice(start, end) : file.slice(start);
+            let signedUrl = multipartUrls[index - 1].signedUrl ?? "";
+            let partNumber = multipartUrls[index - 1].PartNumber ?? 0;
+
+            let uploadChunk = await fetch(signedUrl, {
+              method: "PUT",
+              body: fileBlob,
+            });
+            let etag = uploadChunk.headers.get("etag");
+            partsUploadArray.push({
+              ETag: etag ?? "",
+              PartNumber: partNumber,
+            });
+          }
+
+          // Finalize multipart upload
+          const { data: finalMultipartData, error: finalMultipartError } =
+            await finalizeMultipartUploadQuery({
+              variables: {
+                input: {
+                  fileId: initData.initFileUpload.fileId ?? "",
+                  fileKey: initData.initFileUpload.fileKey ?? "",
+                  parts: partsUploadArray,
+                },
+              },
+            });
+
+          // Handling Errors
+          if (finalMultipartError) {
+            return [];
+          }
+          if (
+            !finalMultipartData ||
+            !finalMultipartData.finalizeMultipartUpload
+          ) {
+            return [];
+          }
+
+          finalUploadedUrl = finalMultipartData.finalizeMultipartUpload;
+        } else {
+          // Direct Upload The Zip File To S3 using pre signed url
+          const { data: s3Url, error: s3Error } = await getS3URL({
+            variables: { fileName: refFileName },
+          });
+
+          // Handling Errors
+          if (s3Error) {
+            return [];
+          }
+          if (!s3Url || !s3Url.getS3SignedURL) {
+            return [];
+          }
+
+          await fetch(s3Url.getS3SignedURL, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            body: file,
+          });
+          const imageUrl = s3Url.getS3SignedURL.split("?")[0];
+
+          finalUploadedUrl = imageUrl;
+        }
+
+        // Update user status and uploadedFiles Array
+        if (!finalUploadedUrl) {
+          return [];
+        }
+
+        finalRefArr.push(finalUploadedUrl);
+      }
+      return [...filesLinkForRef, ...finalRefArr];
+    }
+    return [];
+  };
+  const [addDeliveryFile] = useAddDeliveryFilesLazyQuery();
+  const handleUploadSubmit = async (e: any, serviceId: string) => {
+    try {
+      // For showing the upload progess
+      setFilesArray(e.target.files[0]);
+      let percentage: number | undefined = undefined;
+      // Final zip file name uploaded to aws
+      const finalFileName = `uploadedFiles_${serviceId}`;
+
+      // Creating the zip file
+      //   const zipInit = new JSZip();
+      //   const zip = zipInit.folder("files");
+
+      //   if (!zip) {
+      //     return;
+      //   }
+
+      //   filesArray!.forEach((file) => {
+      //     zip.file(`${file.name}`, file);
+      //   });
+      const file = filesArray!;
+
+      let finalUploadedUrl: undefined | string = undefined;
+
+      // Check if file size is bigger than 5 MB
+      if (formatBytesNumber(file.size) > 5) {
+        // Initializing the upload from server
+        setLoading(true);
+        const { data: initData, error: initError } = await initFileUploadQuery({
+          variables: { fileName: finalFileName + ".zip" },
+        });
+
+        // Handling Errors
+        if (initError) {
+          //error handling left
+          return;
+        }
+        if (!initData || !initData.initFileUpload) {
+          return;
+        }
+
+        // Multipart upload part (dividing the file into chunks and upload the chunks)
+        const chunkSize = 10 * 1024 * 1024; // 10 MiB
+        const chunkCount = Math.floor(file.size / chunkSize) + 1;
+
+        // Getting multiple urls
+        const { data: multipleSignedUrlData, error: multipleSignedUrlError } =
+          await multipartPresignedQuery({
+            variables: {
+              fileId: initData.initFileUpload.fileId ?? "",
+              fileKey: initData.initFileUpload.fileKey ?? "",
+              parts: chunkCount,
+            },
+          });
+
+        // Handling Errors
+        if (multipleSignedUrlError) {
+          return;
+        }
+        if (
+          !multipleSignedUrlData ||
+          !multipleSignedUrlData.getMultipartPreSignedUrls
+        ) {
+          return;
+        }
+
+        let multipartUrls: MultipartSignedUrlResponse[] =
+          multipleSignedUrlData.getMultipartPreSignedUrls.map((el) => ({
+            signedUrl: el.signedUrl,
+            PartNumber: el.PartNumber,
+          }));
+
+        let partsUploadArray: FinalMultipartUploadPartsInput[] = [];
+
+        for (let index = 1; index < chunkCount + 1; index++) {
+          let start = (index - 1) * chunkSize;
+          let end = index * chunkSize;
+          let fileBlob =
+            index < chunkCount ? file.slice(start, end) : file.slice(start);
+          let signedUrl = multipartUrls[index - 1].signedUrl ?? "";
+          let partNumber = multipartUrls[index - 1].PartNumber ?? 0;
+
+          let uploadChunk = await fetch(signedUrl, {
+            method: "PUT",
+            body: fileBlob,
+          });
+          let etag = uploadChunk.headers.get("etag");
+          partsUploadArray.push({
+            ETag: etag ?? "",
+            PartNumber: partNumber,
+          });
+        }
+
+        // Finalize multipart upload
+        const { data: finalMultipartData, error: finalMultipartError } =
+          await finalizeMultipartUploadQuery({
+            variables: {
+              input: {
+                fileId: initData.initFileUpload.fileId ?? "",
+                fileKey: initData.initFileUpload.fileKey ?? "",
+                parts: partsUploadArray,
+              },
+            },
+          });
+
+        // Handling Errors
+        if (finalMultipartError) {
+          return;
+        }
+        if (
+          !finalMultipartData ||
+          !finalMultipartData.finalizeMultipartUpload
+        ) {
+          return;
+        }
+
+        finalUploadedUrl = finalMultipartData.finalizeMultipartUpload;
+      } else {
+        // Direct Upload The Zip File To S3 using pre signed url
+        const { data: s3Url, error: s3Error } = await getS3URL({
+          variables: { fileName: finalFileName },
+        });
+
+        // Handling Errors
+        if (s3Error) {
+          return;
+        }
+        if (!s3Url || !s3Url.getS3SignedURL) {
+          return;
+        }
+
+        await fetch(s3Url.getS3SignedURL, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          body: file,
+        });
+        const imageUrl = s3Url.getS3SignedURL.split("?")[0];
+
+        finalUploadedUrl = imageUrl;
+      }
+
+      // Update user status and uploadedFiles Array
+      if (!finalUploadedUrl) {
+        return;
+      }
+
+      const refArr = await handleRefFilesSubmit(serviceId);
+
+      const { data, error } = await addDeliveryFile({
+        variables: {
+          serviceId: serviceId?.toString() ?? "",
+          url: finalUploadedUrl,
+        },
+      });
+
+      //Handling Errors
+      if (error) {
+        setLoading(false);
+        return;
+      }
+      if (!data || !data.addDeliverFiles) {
+        setLoading(false);
+        return;
+      }
+    } catch (error: any) {}
+  };
+  const [confirmUpload] = useConfirmUploadLazyQuery();
+  const requestReupload = (serviceId: string) => {
+    setOpen(true);
+    setId(serviceId);
+  };
+  let inputFile: HTMLInputElement;
+  const [reuploadedNote, setReuploadedNote] = useState<string>("");
   const columns: GridColDef[] = [
     {
       field: "download",
@@ -43,26 +403,91 @@ export default function ServiceTrackingEmployee() {
             variant="contained"
             // onClick={() => downloadFileFunc(cellValues.row.uploadedFiles[0])}
           >
+            {/* <a href={String(cellValues.row.uploadedFiles[0])} download> */}
             Download
+            {/* </a> */}
           </Button>
         );
       },
     },
-    // {
-    //   field: "Request Reupload",
-    //   headerName: "Request Reupload",
-    //   width: 150,
-    //   renderCell: (cellValues) => {
-    //     return (
-    //       <Button
-    //         variant="contained"
-    //         onClick={() => requestReupload(cellValues.row.id)}
-    //       >
-    //         Download
-    //       </Button>
-    //     );
-    //   },
-    // },
+    {
+      field: "Confirm",
+      headerName: "Confirm",
+      width: 150,
+      renderCell: (cellValues) => {
+        return (
+          <LoadingButton
+            variant="contained"
+            disabled={
+              cellValues.row.statusType === UserServiceStatus.Underreview
+                ? false
+                : true
+            }
+            onClick={() =>
+              handleConfirm(cellValues.row.deliveryDays, cellValues.row.id)
+            }
+            loading={confirmButton === cellValues.row.id ? true : false}
+          >
+            Confirm
+          </LoadingButton>
+        );
+      },
+    },
+    {
+      field: "Request Reupload",
+      headerName: "Request Reupload",
+      width: 200,
+      renderCell: (cellValues) => {
+        return (
+          <Button
+            variant="contained"
+            onClick={() => requestReupload(cellValues.row.id)}
+            disabled={
+              cellValues.row.statusType === UserServiceStatus.Underreview
+                ? false
+                : true
+            }
+          >
+            Request Reupload
+          </Button>
+        );
+      },
+    },
+    {
+      field: "Upload",
+      headerName: "Upload",
+      width: 200,
+      renderCell: (cellValues) => {
+        return (
+          <>
+            <label htmlFor="contained-button-file">
+              <input
+                // style={{ display: "none" }}
+                ref={(input) => {
+                  // assigns a reference so we can trigger it later
+                  inputFile = input!;
+                }}
+                accept=".wav"
+                id="contained-button-file"
+                type="file"
+                onChange={(e) => {
+                  setFilesArray(e.target.files![0]);
+                }}
+              />
+            </label>
+            <Button
+              variant="contained"
+              onClick={(e) => handleUploadSubmit(e, cellValues.row.id)}
+              disabled={
+                cellValues.row.statusType !== UserServiceStatus.Workinprogress
+              }
+            >
+              Upload
+            </Button>
+          </>
+        );
+      },
+    },
     { field: "projectName", headerName: "Project Name", width: 150 },
     { field: "paid", headerName: "Paid", width: 150 },
     { field: "statusType", headerName: "Status Type", width: 150 },
@@ -139,19 +564,32 @@ export default function ServiceTrackingEmployee() {
     },
   ];
   const [getAllServiceForEmployee] = useGetAllServiceForEmployeeLazyQuery();
-  const [getAllEmployees] = useAllEmployeeLazyQuery();
-  const [assignServiceForEmployee] = useAssignServiceMutation();
-  const [allEmp, setAllEmp] = useState<Admin[]>([]);
+  const [reupload] = useRequestReuploadLazyQuery();
   const [loadingButton, setLoadingButton] = useState<boolean>(false);
+  const [confirmButton, setConfirmButton] = useState<string>("");
+
+  const handleConfirm = async (deliverDays: number, serviceId: string) => {
+    setConfirmButton(serviceId);
+    const response = await confirmUpload({
+      variables: {
+        deliveryDays: deliverDays,
+        serviceId: serviceId,
+      },
+    });
+    setConfirmButton("");
+    if (!response.data) {
+      //throw error
+    }
+  };
   const handleSubmit = async () => {
     setLoadingButton(true);
-    if (!emp || !id) {
+    if (!reuploadedNote || !id) {
       //throw error
     }
 
-    const response = await assignServiceForEmployee({
+    const response = await reupload({
       variables: {
-        adminId: emp,
+        reuploadNote: reuploadedNote,
         serviceId: id,
       },
     });
@@ -160,12 +598,11 @@ export default function ServiceTrackingEmployee() {
   };
   const [data, setData] = useState<UserServices[]>([]);
   const [open, setOpen] = useState<boolean>(false);
-  const [emp, setEmp] = useState<string>("");
-  const [empName, setEmpName] = useState<string>("");
   const [id, setId] = useState<string>("");
   const onClose = () => {
     setLoadingButton(false);
     setOpen(false);
+    setReuploadedNote("");
     setId("");
   };
 
@@ -183,17 +620,10 @@ export default function ServiceTrackingEmployee() {
           })) ?? []
         );
       }
-      const allEmps = await getAllEmployees();
-      if (allEmps.data?.allEmployee) {
-        setAllEmp(allEmps.data?.allEmployee);
-        setEmp(allEmps.data.allEmployee[0]._id!);
-        setEmpName(allEmps.data.allEmployee[0].name!);
-      }
       setLoading(false);
     };
     fetchServices();
   }, []);
-
   const [loading, setLoading] = useState<boolean>(false);
   // const [servicesData, setServicesData] = useState<Services[]>([]);
   return (
@@ -219,18 +649,16 @@ export default function ServiceTrackingEmployee() {
         <Box sx={style}>
           <Stack spacing={2}>
             <Typography id="modal-modal-title" variant="h6" component="h2">
-              Type
+              Note
             </Typography>
-            <Select value={emp} onChange={(e) => setEmpName(e.target.value)}>
-              {allEmp.map((ind) => (
-                <MenuItem
-                  value={String(ind._id)}
-                  onClick={() => setEmp(String(ind._id))}
-                >
-                  {ind.name}
-                </MenuItem>
-              ))}
-            </Select>
+            <TextField
+              variant="outlined"
+              id="component-outlined"
+              value={reuploadedNote}
+              fullWidth
+              onChange={(e) => setReuploadedNote(String(e.target.value))}
+              label="Note"
+            />
             <LoadingButton
               variant="contained"
               onClick={handleSubmit}

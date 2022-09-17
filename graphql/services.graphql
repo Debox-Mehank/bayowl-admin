@@ -213,6 +213,48 @@ query Dashboard {
   }
 }
 
+query GetS3SignedURL($fileName: String!) {
+  getS3SignedURL(fileName: $fileName)
+}
+
+query InitFileUpload($fileName: String!) {
+  initFileUpload(fileName: $fileName) {
+    fileId
+    fileKey
+  }
+}
+
+query GetMultipartPreSignedUrls(
+  $parts: Float!
+  $fileKey: String!
+  $fileId: String!
+) {
+  getMultipartPreSignedUrls(parts: $parts, fileKey: $fileKey, fileId: $fileId) {
+    signedUrl
+    PartNumber
+  }
+}
+
+query ApproveProject($serviceId: String!) {
+  approveProject(serviceId: $serviceId)
+}
+
+query AddDeliveryFiles($url: String!, $serviceId: String!) {
+  addDeliverFiles(url: $url, serviceId: $serviceId)
+}
+
+query FinalizeMultipartUpload($input: FinalMultipartUploadInput!) {
+  finalizeMultipartUpload(input: $input)
+}
+
+query ConfirmUpload($deliveryDays: Float!, $serviceId: String!) {
+  confirmUpload(deliveryDays: $deliveryDays, serviceId: $serviceId)
+}
+
+query RequestReupload($reuploadNote: String!, $serviceId: String!) {
+  requestReupload(reuploadNote: $reuploadNote, serviceId: $serviceId)
+}
+
 query Logout {
   adminLogout
 }
