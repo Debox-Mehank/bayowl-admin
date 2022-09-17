@@ -255,7 +255,6 @@ export type QueryRegisterArgs = {
 export type QueryRequestReuploadArgs = {
   reuploadNote: Scalars['String'];
   serviceId: Scalars['String'];
-  userId: Scalars['String'];
 };
 
 
@@ -524,6 +523,14 @@ export type DashboardQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type DashboardQuery = { __typename?: 'Query', dashboardMet: Array<{ __typename?: 'DashboardInterfaceClass', label: string, data: number }> };
+
+export type RequestReuploadQueryVariables = Exact<{
+  reuploadNote: Scalars['String'];
+  serviceId: Scalars['String'];
+}>;
+
+
+export type RequestReuploadQuery = { __typename?: 'Query', requestReupload: boolean };
 
 export type LogoutQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1045,6 +1052,40 @@ export function useDashboardLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
 export type DashboardQueryHookResult = ReturnType<typeof useDashboardQuery>;
 export type DashboardLazyQueryHookResult = ReturnType<typeof useDashboardLazyQuery>;
 export type DashboardQueryResult = Apollo.QueryResult<DashboardQuery, DashboardQueryVariables>;
+export const RequestReuploadDocument = gql`
+    query RequestReupload($reuploadNote: String!, $serviceId: String!) {
+  requestReupload(reuploadNote: $reuploadNote, serviceId: $serviceId)
+}
+    `;
+
+/**
+ * __useRequestReuploadQuery__
+ *
+ * To run a query within a React component, call `useRequestReuploadQuery` and pass it any options that fit your needs.
+ * When your component renders, `useRequestReuploadQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useRequestReuploadQuery({
+ *   variables: {
+ *      reuploadNote: // value for 'reuploadNote'
+ *      serviceId: // value for 'serviceId'
+ *   },
+ * });
+ */
+export function useRequestReuploadQuery(baseOptions: Apollo.QueryHookOptions<RequestReuploadQuery, RequestReuploadQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<RequestReuploadQuery, RequestReuploadQueryVariables>(RequestReuploadDocument, options);
+      }
+export function useRequestReuploadLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<RequestReuploadQuery, RequestReuploadQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<RequestReuploadQuery, RequestReuploadQueryVariables>(RequestReuploadDocument, options);
+        }
+export type RequestReuploadQueryHookResult = ReturnType<typeof useRequestReuploadQuery>;
+export type RequestReuploadLazyQueryHookResult = ReturnType<typeof useRequestReuploadLazyQuery>;
+export type RequestReuploadQueryResult = Apollo.QueryResult<RequestReuploadQuery, RequestReuploadQueryVariables>;
 export const LogoutDocument = gql`
     query Logout {
   adminLogout

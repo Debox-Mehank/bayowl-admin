@@ -207,6 +207,10 @@ query Dashboard {
   }
 }
 
+query RequestReupload($reuploadNote: String!, $serviceId: String!) {
+  requestReupload(reuploadNote: $reuploadNote, serviceId: $serviceId)
+}
+
 query Logout {
   adminLogout
 }

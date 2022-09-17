@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
 import { type } from "os";
+import React from "react";
 import { useEffect, useState } from "react";
 import {
   Admin,
@@ -214,13 +215,15 @@ export default function ServiceTracking() {
               Type
             </Typography>
             <Select value={emp} onChange={(e) => setEmpName(e.target.value)}>
-              {allEmp.map((ind) => (
-                <MenuItem
-                  value={String(ind._id)}
-                  onClick={() => setEmp(String(ind._id))}
-                >
-                  {ind.name}
-                </MenuItem>
+              {allEmp.map((ind, i) => (
+                <React.Fragment key={i}>
+                  <MenuItem
+                    value={String(ind._id)}
+                    onClick={() => setEmp(String(ind._id))}
+                  >
+                    {ind.name}
+                  </MenuItem>
+                </React.Fragment>
               ))}
             </Select>
             <LoadingButton

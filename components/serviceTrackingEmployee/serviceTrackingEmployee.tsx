@@ -7,6 +7,7 @@ import {
   Modal,
   Select,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
@@ -16,6 +17,7 @@ import {
   useAllEmployeeLazyQuery,
   useAssignServiceMutation,
   useGetAllServiceForEmployeeLazyQuery,
+  useRequestReuploadLazyQuery,
   UserServices,
 } from "../../generated/graphql";
 
@@ -31,7 +33,11 @@ const style = {
 };
 
 export default function ServiceTrackingEmployee() {
-  const requestReupload = () => {};
+  const requestReupload = (serviceId: string) => {
+    setOpen(true);
+    setId(serviceId);
+  };
+  const [reuploadedNote, setReuploadedNote] = useState<string>("");
   const columns: GridColDef[] = [
     {
       field: "download",
@@ -48,21 +54,21 @@ export default function ServiceTrackingEmployee() {
         );
       },
     },
-    // {
-    //   field: "Request Reupload",
-    //   headerName: "Request Reupload",
-    //   width: 150,
-    //   renderCell: (cellValues) => {
-    //     return (
-    //       <Button
-    //         variant="contained"
-    //         onClick={() => requestReupload(cellValues.row.id)}
-    //       >
-    //         Download
-    //       </Button>
-    //     );
-    //   },
-    // },
+    {
+      field: "Request Reupload",
+      headerName: "Request Reupload",
+      width: 200,
+      renderCell: (cellValues) => {
+        return (
+          <Button
+            variant="contained"
+            onClick={() => requestReupload(cellValues.row.id)}
+          >
+            Request Reupload
+          </Button>
+        );
+      },
+    },
     { field: "projectName", headerName: "Project Name", width: 150 },
     { field: "paid", headerName: "Paid", width: 150 },
     { field: "statusType", headerName: "Status Type", width: 150 },
@@ -139,19 +145,17 @@ export default function ServiceTrackingEmployee() {
     },
   ];
   const [getAllServiceForEmployee] = useGetAllServiceForEmployeeLazyQuery();
-  const [getAllEmployees] = useAllEmployeeLazyQuery();
-  const [assignServiceForEmployee] = useAssignServiceMutation();
-  const [allEmp, setAllEmp] = useState<Admin[]>([]);
+  const [reupload] = useRequestReuploadLazyQuery();
   const [loadingButton, setLoadingButton] = useState<boolean>(false);
   const handleSubmit = async () => {
     setLoadingButton(true);
-    if (!emp || !id) {
+    if (!reuploadedNote || !id) {
       //throw error
     }
 
-    const response = await assignServiceForEmployee({
+    const response = await reupload({
       variables: {
-        adminId: emp,
+        reuploadNote: reuploadedNote,
         serviceId: id,
       },
     });
@@ -160,12 +164,11 @@ export default function ServiceTrackingEmployee() {
   };
   const [data, setData] = useState<UserServices[]>([]);
   const [open, setOpen] = useState<boolean>(false);
-  const [emp, setEmp] = useState<string>("");
-  const [empName, setEmpName] = useState<string>("");
   const [id, setId] = useState<string>("");
   const onClose = () => {
     setLoadingButton(false);
     setOpen(false);
+    setReuploadedNote("");
     setId("");
   };
 
@@ -183,17 +186,10 @@ export default function ServiceTrackingEmployee() {
           })) ?? []
         );
       }
-      const allEmps = await getAllEmployees();
-      if (allEmps.data?.allEmployee) {
-        setAllEmp(allEmps.data?.allEmployee);
-        setEmp(allEmps.data.allEmployee[0]._id!);
-        setEmpName(allEmps.data.allEmployee[0].name!);
-      }
       setLoading(false);
     };
     fetchServices();
   }, []);
-
   const [loading, setLoading] = useState<boolean>(false);
   // const [servicesData, setServicesData] = useState<Services[]>([]);
   return (
@@ -219,18 +215,16 @@ export default function ServiceTrackingEmployee() {
         <Box sx={style}>
           <Stack spacing={2}>
             <Typography id="modal-modal-title" variant="h6" component="h2">
-              Type
+              Note
             </Typography>
-            <Select value={emp} onChange={(e) => setEmpName(e.target.value)}>
-              {allEmp.map((ind) => (
-                <MenuItem
-                  value={String(ind._id)}
-                  onClick={() => setEmp(String(ind._id))}
-                >
-                  {ind.name}
-                </MenuItem>
-              ))}
-            </Select>
+            <TextField
+              variant="outlined"
+              id="component-outlined"
+              value={reuploadedNote}
+              fullWidth
+              onChange={(e) => setReuploadedNote(String(e.target.value))}
+              label="Note"
+            />
             <LoadingButton
               variant="contained"
               onClick={handleSubmit}
