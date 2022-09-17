@@ -7,21 +7,20 @@ import {
   Modal,
   Select,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
 import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
-import { type } from "os";
 import { useEffect, useState } from "react";
 import {
   Admin,
-  AdminRole,
-  Payment,
   useAllEmployeeLazyQuery,
   useAssignServiceMutation,
   useGetAllServiceForEmployeeLazyQuery,
   UserServices,
 } from "../../generated/graphql";
+
+import Fs from "fs";
+import Https from "https";
 
 const style = {
   position: "absolute",
@@ -34,20 +33,48 @@ const style = {
   p: 4,
 };
 
-export default function ServiceTracking() {
-  const assignService = (cell: any) => {
-    setOpen(true);
-    setId(cell.row.id);
+async function downloadFile(url: string, targetFile: string) {
+  return await new Promise((resolve, reject) => {
+    Https.get(url, (response) => {
+      const code = response.statusCode ?? 0;
+
+      if (code >= 400) {
+        return reject(new Error(response.statusMessage));
+      }
+
+      // handle redirects
+      if (code > 300 && code < 400 && !!response.headers.location) {
+        return downloadFile(response.headers.location, targetFile);
+      }
+
+      // save the file to disk
+      const fileWriter = Fs.createWriteStream(targetFile).on("finish", () => {
+        resolve({});
+      });
+
+      response.pipe(fileWriter);
+    }).on("error", (error) => {
+      reject(error);
+    });
+  });
+}
+
+export default function ServiceTrackingEmployee() {
+  const downloadFileFunc = async (fileUrl: string) => {
+    await downloadFile(fileUrl, "/Download");
   };
   const columns: GridColDef[] = [
     {
-      field: "assign",
-      headerName: "Assign",
+      field: "download",
+      headerName: "Download",
       width: 150,
       renderCell: (cellValues) => {
         return (
-          <Button variant="contained" onClick={() => assignService(cellValues)}>
-            Assign
+          <Button
+            variant="contained"
+            onClick={() => downloadFileFunc(cellValues.row.uploadedFiles[0])}
+          >
+            Download
           </Button>
         );
       },

@@ -18,6 +18,7 @@ import UAM from "../uam/uam";
 import Payments from "../payments/payments";
 import TAM from "../tam/tam";
 import ServiceTracking from "../serviceTracking/serviceTracking";
+import ServiceTrackingEmployee from "../serviceTrackingEmployee/serviceTrackingEmployee";
 
 const drawerWidth: number = 240;
 
@@ -25,13 +26,23 @@ interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
 }
 
-const sideMenuItem: ListOfService[] = [
+const sideMenuItemManager: ListOfService[] = [
+  ListOfService.UAM,
+  ListOfService.ServiceTracking,
+];
+
+const sideMenuItemEmployee: ListOfService[] = [
+  ListOfService.ServiceTrackingEmployee,
+];
+
+const sideMenuItemMaster: ListOfService[] = [
   ListOfService.Services,
   ListOfService.UAM,
   ListOfService.Payments,
   ListOfService.TAM,
   ListOfService.ServiceTracking,
 ];
+
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })<AppBarProps>(({ theme, open }) => ({
@@ -78,10 +89,14 @@ const Drawer = styled(MuiDrawer, {
 
 const mdTheme = createTheme();
 
-function Layout() {
+function Layout({ typeRole }: { typeRole: string }) {
   const [open, setOpen] = useState<boolean>(true);
   const [currentService, setCurrentService] = useState<ListOfService>(
-    ListOfService.Services
+    typeRole === "master"
+      ? ListOfService.Services
+      : typeRole === "manager"
+      ? ListOfService.UAM
+      : ListOfService.ServiceTrackingEmployee
   );
   const toggleDrawer = () => {
     setOpen(!open);
@@ -99,6 +114,8 @@ function Layout() {
         return <TAM />;
       case ListOfService.ServiceTracking:
         return <ServiceTracking />;
+      case ListOfService.ServiceTrackingEmployee:
+        return <ServiceTrackingEmployee />;
     }
   }
 
@@ -149,13 +166,30 @@ function Layout() {
         </Toolbar>
         <Divider />
         <List component="nav">
-          {sideMenuItem.map((ind: ListOfService) => (
-            <MainListItems
-              name={ind}
-              key={ind}
-              changeService={(ser: ListOfService) => setCurrentService(ser)}
-            />
-          ))}
+          {typeRole === "master" &&
+            sideMenuItemMaster.map((ind: ListOfService) => (
+              <MainListItems
+                name={ind}
+                key={ind}
+                changeService={(ser: ListOfService) => setCurrentService(ser)}
+              />
+            ))}
+          {typeRole === "employee" &&
+            sideMenuItemEmployee.map((ind: ListOfService) => (
+              <MainListItems
+                name={ind}
+                key={ind}
+                changeService={(ser: ListOfService) => setCurrentService(ser)}
+              />
+            ))}
+          {typeRole === "manager" &&
+            sideMenuItemManager.map((ind: ListOfService) => (
+              <MainListItems
+                name={ind}
+                key={ind}
+                changeService={(ser: ListOfService) => setCurrentService(ser)}
+              />
+            ))}
         </List>
       </Drawer>
       <Box

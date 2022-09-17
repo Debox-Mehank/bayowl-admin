@@ -4,4 +4,5 @@ export enum ListOfService {
   Services = "Services",
   Payments = "Payments",
   ServiceTracking = "ServiceTracking",
+  ServiceTrackingEmployee = "ServiceTrackingEmployee",
 }
