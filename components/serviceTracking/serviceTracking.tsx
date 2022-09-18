@@ -68,7 +68,8 @@ export default function ServiceTracking() {
     setData(
       arr.map((el) => ({
         ...el,
-        statusType: UserServiceStatus.Delivered,
+        statusType:
+          el._id === serviceId ? UserServiceStatus.Delivered : el.statusType,
       }))
     );
   };
@@ -353,6 +354,19 @@ export default function ServiceTracking() {
       if (!response.data!.addRevisionNotesByMaster) {
         //Handle error
       }
+
+      let arr = [...data];
+      setData(
+        arr.map((el) => ({
+          ...el,
+          statusType:
+            el._id === id ? UserServiceStatus.Workinprogress : el.statusType,
+          numberOfRevisionsByMaster:
+            el._id === id
+              ? (el.numberOfRevisionsByMaster ?? 0) + 1
+              : el.numberOfRevisionsByMaster,
+        }))
+      );
       onCloseForReject();
     }
   };

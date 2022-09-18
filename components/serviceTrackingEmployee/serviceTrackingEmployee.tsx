@@ -26,6 +26,7 @@ import {
   useAddDeliveryFilesLazyQuery,
 } from "../../generated/graphql";
 import { formatBytesNumber } from "./utils/formatBytes";
+import moment from "moment";
 
 const style = {
   position: "absolute",
@@ -186,8 +187,6 @@ export default function ServiceTrackingEmployee() {
         return;
       }
 
-      console.log(finalUploadedUrl);
-
       const { data: finalData, error } = await addDeliveryFile({
         variables: {
           serviceId: serviceId?.toString() ?? "",
@@ -205,26 +204,20 @@ export default function ServiceTrackingEmployee() {
         return;
       }
 
-      setData((prev) => {
-        let arr = [...prev];
-        arr.forEach((element) => {
-          if (element._id === serviceId) {
-            element.statusType === UserServiceStatus.Underreviewinternal;
-          }
-        });
-        return arr;
-      });
-      setLoading(false);
-      setOpenUpload(false);
-      setSnackMessage("Files Uploaded Successfully");
-      setShowSnack(true);
       let arr = [...data];
       setData(
         arr.map((el) => ({
           ...el,
-          statusType: UserServiceStatus.Underreviewinternal,
+          statusType:
+            el._id === serviceId
+              ? UserServiceStatus.Underreviewinternal
+              : el.statusType,
         }))
       );
+      setLoading(false);
+      setOpenUpload(false);
+      setSnackMessage("Files Uploaded Successfully");
+      setShowSnack(true);
     } catch (error: any) {}
   };
   const [confirmUpload] = useConfirmUploadLazyQuery();
@@ -349,7 +342,7 @@ export default function ServiceTrackingEmployee() {
     {
       field: "revisionTimeByMaster",
       headerName: "Note Time",
-      width: 150,
+      width: 180,
     },
     { field: "projectName", headerName: "Project Name", width: 150 },
     { field: "paid", headerName: "Paid", width: 150 },
@@ -447,7 +440,13 @@ export default function ServiceTrackingEmployee() {
 
     let arr = [...data];
     setData(
-      arr.map((el) => ({ ...el, statusType: UserServiceStatus.Workinprogress }))
+      arr.map((el) => ({
+        ...el,
+        statusType:
+          el._id === serviceId
+            ? UserServiceStatus.Workinprogress
+            : el.statusType,
+      }))
     );
   };
   const handleSubmit = async () => {
@@ -469,8 +468,13 @@ export default function ServiceTrackingEmployee() {
 
     let arr = [...data];
     setData(
-      arr.map((el) => ({ ...el, statusType: UserServiceStatus.Pendingupload }))
+      arr.map((el) => ({
+        ...el,
+        statusType:
+          el._id === id ? UserServiceStatus.Pendingupload : el.statusType,
+      }))
     );
+    onClose();
   };
   const [data, setData] = useState<UserServices[]>([]);
   const [open, setOpen] = useState<boolean>(false);
@@ -500,6 +504,9 @@ export default function ServiceTrackingEmployee() {
           response.data?.getAllServiceForEmployee.map((ind) => ({
             ...ind,
             id: ind._id,
+            revisionTimeByMaster: ind.revisionTimeByMaster
+              ? moment(ind.revisionTimeByMaster).format("MMM Do YY, hh:mm a")
+              : "",
             allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
             allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",
           })) ?? []
