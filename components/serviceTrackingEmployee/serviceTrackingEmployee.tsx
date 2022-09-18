@@ -24,6 +24,7 @@ import {
   useGetS3SignedUrlLazyQuery,
   useInitFileUploadLazyQuery,
   useAddDeliveryFilesLazyQuery,
+  useUploadRevisionFilesMutation,
 } from "../../generated/graphql";
 import { formatBytesNumber } from "./utils/formatBytes";
 
@@ -47,6 +48,10 @@ interface refFileList {
 
 export default function ServiceTrackingEmployee() {
   const [filesArray, setFilesArray] = useState<File[]>();
+  const [revisionNumber, setRevisionNumber] = useState<number>(0);
+  const [statusForUploading, setStatusForUploading] =
+    useState<UserServiceStatus | null>(null);
+  const [uploadRevisionFiles] = useUploadRevisionFilesMutation();
   const [getS3URL] = useGetS3SignedUrlLazyQuery();
   const [initFileUploadQuery] = useInitFileUploadLazyQuery();
   const [multipartPresignedQuery] = useGetMultipartPreSignedUrlsLazyQuery();
@@ -62,10 +67,10 @@ export default function ServiceTrackingEmployee() {
 
       let finalUploadedUrl: undefined | string = undefined;
 
+      setLoadingButton(true);
       // Check if file size is bigger than 5 MB
       if (formatBytesNumber(file.size) > 5) {
         // Initializing the upload from server
-        setLoadingButton(true);
         const { data: initData, error: initError } = await initFileUploadQuery({
           variables: { fileName: finalFileName + ".zip" },
         });
@@ -186,23 +191,42 @@ export default function ServiceTrackingEmployee() {
         return;
       }
 
-      const { data, error } = await addDeliveryFile({
-        variables: {
-          serviceId: serviceId?.toString() ?? "",
-          url: finalUploadedUrl,
-        },
-      });
+      if (statusForUploading === null) {
+        //throw error
+        return;
+      }
 
+      if (statusForUploading === UserServiceStatus.Revisionrequest) {
+        const { data, errors } = await uploadRevisionFiles({
+          variables: {
+            revisionNumber: revisionNumber,
+            fileUrl: finalUploadedUrl,
+            serviceId: serviceId,
+          },
+        });
+        if (!data || !data.uploadRevisionFiles) {
+          setLoadingButton(false);
+          return;
+        }
+      } else {
+        const { data, error } = await addDeliveryFile({
+          variables: {
+            serviceId: serviceId?.toString() ?? "",
+            url: finalUploadedUrl,
+          },
+        });
+        if (error) {
+          setLoadingButton(false);
+          return;
+        }
+        if (!data || !data.addDeliverFiles) {
+          setLoadingButton(false);
+          return;
+        }
+      }
       //Handling Errors
-      if (error) {
-        setLoadingButton(false);
-        return;
-      }
-      if (!data || !data.addDeliverFiles) {
-        setLoadingButton(false);
-        return;
-      }
-
+      setStatusForUploading(null);
+      setRevisionNumber(0);
       setLoadingButton(false);
       setOpenUpload(false);
       setSnackMessage("Files Uploaded Successfully");
@@ -292,9 +316,19 @@ export default function ServiceTrackingEmployee() {
           <>
             <Button
               variant="contained"
-              onClick={(e) => uploadOnOpen(cellValues.row._id)}
+              onClick={(e) =>
+                uploadOnOpen(
+                  cellValues.row._id,
+                  cellValues.row.statusType,
+                  cellValues.row.revisionNumber
+                )
+              }
               disabled={
-                cellValues.row.statusType !== UserServiceStatus.Workinprogress
+                cellValues.row.statusType ===
+                  UserServiceStatus.Workinprogress ||
+                cellValues.row.statusType === UserServiceStatus.Revisionrequest
+                  ? false
+                  : true
               }
             >
               Upload
@@ -331,6 +365,11 @@ export default function ServiceTrackingEmployee() {
     {
       field: "revisionTimeByMaster",
       headerName: "Note Time",
+      width: 150,
+    },
+    {
+      field: "revisionNotesByUser",
+      headerName: "User Revision Notes",
       width: 150,
     },
     { field: "projectName", headerName: "Project Name", width: 150 },
@@ -451,9 +490,15 @@ export default function ServiceTrackingEmployee() {
     setId("");
   };
   const [openUpload, setOpenUpload] = useState<boolean>(false);
-  const uploadOnOpen = (serviceId: string) => {
+  const uploadOnOpen = (
+    serviceId: string,
+    status: UserServiceStatus,
+    rNum: number
+  ) => {
     setId(serviceId);
     setOpenUpload(true);
+    setStatusForUploading(status);
+    setRevisionNumber(rNum);
   };
   const uploadOnClose = () => {
     setLoading(false);
@@ -471,6 +516,14 @@ export default function ServiceTrackingEmployee() {
             id: ind._id,
             allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
             allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",
+            revisionNotesByUser:
+              ind.revisionFiles.length !== 0
+                ? ind.revisionFiles[ind.revisionFiles.length - 1].description
+                : "",
+            revisionNumber:
+              ind.revisionFiles.length !== 0
+                ? ind.revisionFiles[ind.revisionFiles.length - 1].revision
+                : 0,
           })) ?? []
         );
       }

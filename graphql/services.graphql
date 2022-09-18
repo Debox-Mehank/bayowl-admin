@@ -193,7 +193,6 @@ query AllDashboardContent {
     createdBy {
       name
     }
-    text
     image
     active
     createdAt
@@ -210,7 +209,6 @@ query AddDashboardContent($input: DashboardContentInput!) {
     createdBy {
       name
     }
-    text
     image
     active
     createdAt
@@ -289,6 +287,18 @@ query MeAdmin {
 
 mutation AddAdmin($input: AdminRegisterInput!) {
   addUser(input: $input)
+}
+
+mutation UploadRevisionFiles(
+  $revisionNumber: Float!
+  $fileUrl: String!
+  $serviceId: String!
+) {
+  uploadRevisionFiles(
+    revisionNumber: $revisionNumber
+    fileUrl: $fileUrl
+    serviceId: $serviceId
+  )
 }
 
 mutation AddService($input: [ServicesInput!]!) {

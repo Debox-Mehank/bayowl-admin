@@ -67,13 +67,11 @@ export type DashboardContent = {
   createdBy: Admin;
   image: Scalars['String'];
   lastUpdatedBy: Admin;
-  text: Scalars['String'];
   updatedAt: Scalars['DateTime'];
 };
 
 export type DashboardContentInput = {
   image: Scalars['String'];
-  text: Scalars['String'];
 };
 
 export type DashboardInterfaceClass = {
@@ -110,6 +108,8 @@ export type Mutation = {
   addService: Scalars['Boolean'];
   addUser: Scalars['String'];
   assignService: Scalars['Boolean'];
+  requestRevision: Scalars['Boolean'];
+  uploadRevisionFiles: Scalars['Boolean'];
 };
 
 
@@ -125,6 +125,20 @@ export type MutationAddUserArgs = {
 
 export type MutationAssignServiceArgs = {
   adminId: Scalars['String'];
+  serviceId: Scalars['String'];
+};
+
+
+export type MutationRequestRevisionArgs = {
+  description: Scalars['String'];
+  revisionNumber: Scalars['Float'];
+  serviceId: Scalars['String'];
+};
+
+
+export type MutationUploadRevisionFilesArgs = {
+  fileUrl: Scalars['String'];
+  revisionNumber: Scalars['Float'];
   serviceId: Scalars['String'];
 };
 
@@ -164,6 +178,7 @@ export type Query = {
   getAllServiceForEmployee: Array<UserServices>;
   getAllServiceForMaster: Array<UserServices>;
   getAllUser: Array<User>;
+  getContentUploadUrl: Scalars['String'];
   getMultipartPreSignedUrls: Array<MultipartSignedUrlResponse>;
   getS3SignedURL: Scalars['String'];
   getServiceDetails: Array<Services>;
@@ -172,6 +187,7 @@ export type Query = {
   initiatePayment: Scalars['String'];
   login: Scalars['Boolean'];
   logout: Scalars['Boolean'];
+  markCompleted: Scalars['Boolean'];
   me: User;
   meAdmin?: Maybe<Admin>;
   register: Scalars['Boolean'];
@@ -231,6 +247,11 @@ export type QueryFinalizeMultipartUploadArgs = {
 };
 
 
+export type QueryGetContentUploadUrlArgs = {
+  fileName: Scalars['String'];
+};
+
+
 export type QueryGetMultipartPreSignedUrlsArgs = {
   fileId: Scalars['String'];
   fileKey: Scalars['String'];
@@ -268,6 +289,11 @@ export type QueryLoginArgs = {
   email: Scalars['String'];
   password: Scalars['String'];
   token?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryMarkCompletedArgs = {
+  serviceId: Scalars['String'];
 };
 
 
@@ -433,6 +459,7 @@ export type UserServices = {
   assignedBy?: Maybe<Admin>;
   assignedTime?: Maybe<Scalars['DateTime']>;
   assignedTo?: Maybe<Admin>;
+  completionDate?: Maybe<Scalars['DateTime']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   deliveredFiles?: Maybe<Array<Scalars['String']>>;
   deliveryDays?: Maybe<Scalars['Float']>;
@@ -456,6 +483,7 @@ export type UserServices = {
   price: Scalars['Float'];
   projectName?: Maybe<Scalars['String']>;
   referenceFiles: Array<Scalars['String']>;
+  requestReuploadCounter?: Maybe<Scalars['Float']>;
   reupload?: Maybe<Scalars['DateTime']>;
   reuploadNote?: Maybe<Scalars['String']>;
   revisionFiles: Array<RevisionFiles>;
@@ -544,14 +572,14 @@ export type AllEmployeeQuery = { __typename?: 'Query', allEmployee: Array<{ __ty
 export type AllDashboardContentQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type AllDashboardContentQuery = { __typename?: 'Query', allDashboardContent: Array<{ __typename?: 'DashboardContent', _id: string, text: string, image: string, active: boolean, createdAt: any, updatedAt: any, lastUpdatedBy: { __typename?: 'Admin', name?: string | null }, createdBy: { __typename?: 'Admin', name?: string | null } }> };
+export type AllDashboardContentQuery = { __typename?: 'Query', allDashboardContent: Array<{ __typename?: 'DashboardContent', _id: string, image: string, active: boolean, createdAt: any, updatedAt: any, lastUpdatedBy: { __typename?: 'Admin', name?: string | null }, createdBy: { __typename?: 'Admin', name?: string | null } }> };
 
 export type AddDashboardContentQueryVariables = Exact<{
   input: DashboardContentInput;
 }>;
 
 
-export type AddDashboardContentQuery = { __typename?: 'Query', addDashboardContent: { __typename?: 'DashboardContent', _id: string, text: string, image: string, active: boolean, createdAt: any, updatedAt: any, lastUpdatedBy: { __typename?: 'Admin', name?: string | null }, createdBy: { __typename?: 'Admin', name?: string | null } } };
+export type AddDashboardContentQuery = { __typename?: 'Query', addDashboardContent: { __typename?: 'DashboardContent', _id: string, image: string, active: boolean, createdAt: any, updatedAt: any, lastUpdatedBy: { __typename?: 'Admin', name?: string | null }, createdBy: { __typename?: 'Admin', name?: string | null } } };
 
 export type AssignServiceMutationVariables = Exact<{
   adminId: Scalars['String'];
@@ -650,6 +678,15 @@ export type AddAdminMutationVariables = Exact<{
 
 
 export type AddAdminMutation = { __typename?: 'Mutation', addUser: string };
+
+export type UploadRevisionFilesMutationVariables = Exact<{
+  revisionNumber: Scalars['Float'];
+  fileUrl: Scalars['String'];
+  serviceId: Scalars['String'];
+}>;
+
+
+export type UploadRevisionFilesMutation = { __typename?: 'Mutation', uploadRevisionFiles: boolean };
 
 export type AddServiceMutationVariables = Exact<{
   input: Array<ServicesInput> | ServicesInput;
@@ -1036,7 +1073,6 @@ export const AllDashboardContentDocument = gql`
     createdBy {
       name
     }
-    text
     image
     active
     createdAt
@@ -1081,7 +1117,6 @@ export const AddDashboardContentDocument = gql`
     createdBy {
       name
     }
-    text
     image
     active
     createdAt
@@ -1591,6 +1626,43 @@ export function useAddAdminMutation(baseOptions?: Apollo.MutationHookOptions<Add
 export type AddAdminMutationHookResult = ReturnType<typeof useAddAdminMutation>;
 export type AddAdminMutationResult = Apollo.MutationResult<AddAdminMutation>;
 export type AddAdminMutationOptions = Apollo.BaseMutationOptions<AddAdminMutation, AddAdminMutationVariables>;
+export const UploadRevisionFilesDocument = gql`
+    mutation UploadRevisionFiles($revisionNumber: Float!, $fileUrl: String!, $serviceId: String!) {
+  uploadRevisionFiles(
+    revisionNumber: $revisionNumber
+    fileUrl: $fileUrl
+    serviceId: $serviceId
+  )
+}
+    `;
+export type UploadRevisionFilesMutationFn = Apollo.MutationFunction<UploadRevisionFilesMutation, UploadRevisionFilesMutationVariables>;
+
+/**
+ * __useUploadRevisionFilesMutation__
+ *
+ * To run a mutation, you first call `useUploadRevisionFilesMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUploadRevisionFilesMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [uploadRevisionFilesMutation, { data, loading, error }] = useUploadRevisionFilesMutation({
+ *   variables: {
+ *      revisionNumber: // value for 'revisionNumber'
+ *      fileUrl: // value for 'fileUrl'
+ *      serviceId: // value for 'serviceId'
+ *   },
+ * });
+ */
+export function useUploadRevisionFilesMutation(baseOptions?: Apollo.MutationHookOptions<UploadRevisionFilesMutation, UploadRevisionFilesMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UploadRevisionFilesMutation, UploadRevisionFilesMutationVariables>(UploadRevisionFilesDocument, options);
+      }
+export type UploadRevisionFilesMutationHookResult = ReturnType<typeof useUploadRevisionFilesMutation>;
+export type UploadRevisionFilesMutationResult = Apollo.MutationResult<UploadRevisionFilesMutation>;
+export type UploadRevisionFilesMutationOptions = Apollo.BaseMutationOptions<UploadRevisionFilesMutation, UploadRevisionFilesMutationVariables>;
 export const AddServiceDocument = gql`
     mutation AddService($input: [ServicesInput!]!) {
   addService(input: $input)
