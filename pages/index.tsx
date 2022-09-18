@@ -12,7 +12,7 @@ const Home: NextPage = () => {
       const response = await meAdmin();
 
       if (response.error) {
-        console.log("here");
+        console.log(response.error);
         return;
       }
 

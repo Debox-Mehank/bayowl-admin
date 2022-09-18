@@ -52,6 +52,9 @@ fragment services on UserServices {
   estDeliveryDate
   assignedTime
   deliveredFiles
+  revisionNotesByMaster
+  revisionTimeByMaster
+  numberOfRevisionsByMaster
 }
 
 query GetAllService {
@@ -293,4 +296,8 @@ mutation AddService($input: [ServicesInput!]!) {
 
 query GetContentUploadUrl($fileName: String!) {
   getContentUploadUrl(fileName: $fileName)
+}
+
+query AddRevisionNotesByMaster($note: String!, $serviceId: String!) {
+  addRevisionNotesByMaster(note: $note, serviceId: $serviceId)
 }

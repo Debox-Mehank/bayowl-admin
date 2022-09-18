@@ -3,22 +3,15 @@ import {
   Box,
   Button,
   LinearProgress,
-  MenuItem,
   Modal,
-  Select,
   Snackbar,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
-import JSZip from "jszip";
-import router from "next/router";
 import { useEffect, useState } from "react";
 import {
-  Admin,
-  useAllEmployeeLazyQuery,
-  useAssignServiceMutation,
   useGetAllServiceForEmployeeLazyQuery,
   useRequestReuploadLazyQuery,
   UserServices,
@@ -72,7 +65,7 @@ export default function ServiceTrackingEmployee() {
       // Check if file size is bigger than 5 MB
       if (formatBytesNumber(file.size) > 5) {
         // Initializing the upload from server
-        setLoading(true);
+        setLoadingButton(true);
         const { data: initData, error: initError } = await initFileUploadQuery({
           variables: { fileName: finalFileName + ".zip" },
         });
@@ -204,7 +197,7 @@ export default function ServiceTrackingEmployee() {
 
       //Handling Errors
       if (error) {
-        setLoading(false);
+        setLoadingButton(false);
         return;
       }
       if (!finalData || !finalData.addDeliverFiles) {
@@ -311,7 +304,7 @@ export default function ServiceTrackingEmployee() {
     {
       field: "Upload",
       headerName: "Upload",
-      width: 200,
+      width: 150,
       renderCell: (cellValues) => {
         return (
           <>
@@ -327,6 +320,36 @@ export default function ServiceTrackingEmployee() {
           </>
         );
       },
+    },
+    // {
+    //   field: "Request Reupload",
+    //   headerName: "Request Reupload",
+    //   width: 200,
+    //   renderCell: (cellValues) => {
+    //     return (
+    //       <Button
+    //         variant="contained"
+    //         onClick={() => requestReupload(cellValues.row.id)}
+    //         disabled={
+    //           cellValues.row.statusType === UserServiceStatus.Underreview
+    //             ? false
+    //             : true
+    //         }
+    //       >
+    //         Request Reupload
+    //       </Button>
+    //     );
+    //   },
+    // },
+    {
+      field: "revisionNotesByMaster",
+      headerName: "Notes",
+      width: 150,
+    },
+    {
+      field: "revisionTimeByMaster",
+      headerName: "Note Time",
+      width: 150,
     },
     { field: "projectName", headerName: "Project Name", width: 150 },
     { field: "paid", headerName: "Paid", width: 150 },
