@@ -70,6 +70,7 @@ export default function ServiceTracking() {
     );
   };
   const columns: GridColDef[] = [
+    { field: "projectName", headerName: "Project Name", width: 150 },
     {
       field: "assign",
       headerName: "Assign",
@@ -169,7 +170,6 @@ export default function ServiceTracking() {
       headerName: "Number Of Rejections",
       width: 150,
     },
-    { field: "projectName", headerName: "Project Name", width: 150 },
     { field: "paid", headerName: "Paid", width: 150 },
     { field: "allotedTo", headerName: "Assigned To", width: 150 },
     { field: "allotedBy", headerName: "Assigned By", width: 150 },

@@ -33,7 +33,8 @@ const Home: NextPage = () => {
   useEffect(() => {
     getRole();
   }, []);
-  if (pageDecider === "false" || !pageDecider) return <Login />;
+  if (pageDecider === "false") return <Login />;
+  else if (!pageDecider) return <></>;
   return <Layout typeRole={pageDecider} />;
 };
 

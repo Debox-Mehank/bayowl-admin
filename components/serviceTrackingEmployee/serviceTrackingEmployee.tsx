@@ -256,6 +256,7 @@ export default function ServiceTrackingEmployee() {
   let inputFile: HTMLInputElement;
   const [reuploadedNote, setReuploadedNote] = useState<string>("");
   const columns: GridColDef[] = [
+    { field: "projectName", headerName: "Project Name", width: 150 },
     {
       field: "download",
       headerName: "Download",
@@ -387,7 +388,6 @@ export default function ServiceTrackingEmployee() {
       headerName: "User Revision Notes",
       width: 150,
     },
-    { field: "projectName", headerName: "Project Name", width: 150 },
     { field: "paid", headerName: "Paid", width: 150 },
     { field: "statusType", headerName: "Status Type", width: 150 },
     { field: "mainCategory", headerName: "Main Category", width: 150 },
