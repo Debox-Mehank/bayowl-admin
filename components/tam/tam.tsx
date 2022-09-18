@@ -166,6 +166,7 @@ export default function TAM() {
         strict: true,
       })
     );
+    setLoadingButton(false);
   };
   // const [servicesData, setServicesData] = useState<Services[]>([]);
   return (
