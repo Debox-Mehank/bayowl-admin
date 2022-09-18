@@ -5,6 +5,7 @@ import {
   MenuItem,
   Modal,
   Select,
+  Snackbar,
   Stack,
   Switch,
   TextField,
@@ -28,8 +29,10 @@ import {
   useAddAdminMutation,
   useAddDashboardContentLazyQuery,
   useAllDashboardContentLazyQuery,
+  useGetContentUploadUrlLazyQuery,
 } from "../../generated/graphql";
 import { LoadingButton } from "@mui/lab";
+import moment from "moment";
 
 export default function DashboardContentPage() {
   const style = {
@@ -43,6 +46,7 @@ export default function DashboardContentPage() {
     p: 4,
   };
   const [getAllContent] = useAllDashboardContentLazyQuery();
+  const [getContentUploadUrlQuery] = useGetContentUploadUrlLazyQuery();
   const [data, setData] = useState<DashboardContent[]>([]);
   const [content, setContent] = useState<string>("");
   useEffect(() => {
@@ -57,6 +61,14 @@ export default function DashboardContentPage() {
             lastUpdatedByName:
               ind.lastUpdatedBy !== null ? ind.lastUpdatedBy.name : "",
             createdByName: ind.createdBy !== null ? ind.createdBy.name : "",
+            createdAt:
+              ind.createdAt !== null
+                ? moment(ind.createdAt).format("MMM Do YY, hh:mm a")
+                : "",
+            updatedAt:
+              ind.updatedAt !== null
+                ? moment(ind.updatedAt).format("MMM Do YY, hh:mm a")
+                : "",
           })) ?? []
         );
       }
@@ -64,49 +76,11 @@ export default function DashboardContentPage() {
     };
     fetchServices();
   }, []);
-
-  //   const handleSubmit = async () => {
-  //     setLoadingButton(true);
-  //     if (!validateEmail(email)) {
-  //       //throw something
-  //       setLoadingButton(false);
-  //     }
-  //     if (!name || !password || !type) {
-  //       //throw error
-  //       setLoadingButton(false);
-  //     } else {
-  //       const response = await addAdmin({
-  //         variables: {
-  //           input: {
-  //             name: name,
-  //             email: email,
-  //             password: password,
-  //             type: type,
-  //           },
-  //         },
-  //       });
-
-  //       if (response.data) {
-  //         const prev = [...data];
-  //         prev.push({
-  //           id: response.data!.addUser,
-  //           name: name,
-  //           email: email,
-  //           type: type,
-  //         //   createdBy: "Yash",
-  //           createdAt: new Date(),
-  //           updatedAt: new Date(),
-  //         });
-  //         setData(prev);
-  //       }
-  //       onClose();
-  //     }
-  //   };
   const [columns, setColumns] = useState<GridColDef[]>([
     {
       field: "active",
       headerName: "Active",
-      width: 150,
+      width: 180,
       renderCell: (cellValues: GridCellParams<DashboardContent>) => {
         return (
           <Switch
@@ -116,14 +90,15 @@ export default function DashboardContentPage() {
         );
       },
     },
-    { field: "text", headerName: "Text", width: 150 },
-    { field: "image", headerName: "Image", width: 150 },
-    { field: "lastUpdatedByName", headerName: "Last Updated By", width: 150 },
-    { field: "createdByName", headerName: "Created By", width: 150 },
-    { field: "createdAt", headerName: "Created At", width: 150 },
-    { field: "updatedAt", headerName: "Updated At", width: 150 },
+    { field: "image", headerName: "Image", width: 180 },
+    { field: "lastUpdatedByName", headerName: "Last Updated By", width: 180 },
+    { field: "createdByName", headerName: "Created By", width: 180 },
+    { field: "createdAt", headerName: "Created At", width: 180 },
+    { field: "updatedAt", headerName: "Updated At", width: 180 },
   ]);
   const [open, setOpen] = useState<boolean>(false);
+  const [showSnack, setShowSnack] = useState<boolean>(false);
+  const [snackMessage, setSnackMessage] = useState<string>();
   function CustomToolbar() {
     return (
       <GridToolbarContainer>
@@ -150,33 +125,65 @@ export default function DashboardContentPage() {
   const [addDashboardContent] = useAddDashboardContentLazyQuery();
   const handleSubmit = async () => {
     setLoadingButton(true);
-    if (!content || fileName === "" || !file) {
-      //throw error
-    }
-    let uploadedData;
-    const formData = new FormData();
-    formData.append("file", file!);
-    formData.append("upload_preset", "login-content-uploads");
-    formData.append(
-      "public_id",
-      fileName + "_" + Math.round(Date.now() / 1000)
-    );
 
-    uploadedData = await fetch(
-      "https://api.cloudinary.com/v1_1/inradiuscloud/image/upload",
-      { method: "POST", body: formData }
-    ).then((r) => r.json());
+    if (fileName === "" || !file) {
+      //throw error
+      return;
+    }
+
+    const fileType = `.${file.type.replace(/(.*)\//g, "")}`;
+
+    const FileTypes = [".png", ".jpg", ".jpeg"];
+
+    if (!FileTypes.includes(fileType)) {
+      setSnackMessage(
+        `Invalid upload format only ${FileTypes.join(", ")} are supported.`
+      );
+      setShowSnack(true);
+      return;
+    }
+
+    let finalFileName = `dashboard_content_${Date.now()}${fileType}`;
+
+    // Direct Upload The File To S3 using pre signed url
+    const { data: s3Url, error: s3Error } = await getContentUploadUrlQuery({
+      variables: { fileName: finalFileName },
+    });
+
+    // Handling Errors
+    if (s3Error) {
+      setLoading(false);
+      setSnackMessage(s3Error.message.toString());
+      setShowSnack(true);
+      return;
+    }
+    if (!s3Url || !s3Url.getContentUploadUrl) {
+      setLoading(false);
+      setSnackMessage("Something went wrong, try again later.");
+      setShowSnack(true);
+      return;
+    }
+
+    await fetch(s3Url.getContentUploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      body: file,
+    });
+    const imageUrl = s3Url.getContentUploadUrl.split("?")[0];
 
     const response = await addDashboardContent({
       variables: {
         input: {
-          text: content,
-          image: uploadedData.secure_url,
+          image: imageUrl,
         },
       },
     });
 
     if (response.error) {
+      setSnackMessage(response.error.message);
+      setShowSnack(true);
       //throw error
     }
     const respObj = response!.data!.addDashboardContent;
@@ -215,14 +222,6 @@ export default function DashboardContentPage() {
             <Typography id="modal-modal-title" variant="h6" component="h2">
               Content
             </Typography>
-            <TextField
-              variant="outlined"
-              id="component-outlined"
-              value={content}
-              fullWidth
-              onChange={(e) => setContent(String(e.target.value))}
-              label="Content"
-            />
             <label htmlFor="contained-button-file">
               <input
                 style={{ display: "none" }}
@@ -257,6 +256,13 @@ export default function DashboardContentPage() {
           </Stack>
         </Box>
       </Modal>
+      <Snackbar
+        open={showSnack}
+        autoHideDuration={4000}
+        onClose={() => setShowSnack(false)}
+        message={snackMessage}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      />
     </>
   );
 }

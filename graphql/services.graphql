@@ -51,6 +51,7 @@ fragment services on UserServices {
   submissionDate
   estDeliveryDate
   assignedTime
+  deliveredFiles
 }
 
 query GetAllService {
@@ -190,7 +191,6 @@ query AllDashboardContent {
     createdBy {
       name
     }
-    text
     image
     active
     createdAt
@@ -207,7 +207,6 @@ query AddDashboardContent($input: DashboardContentInput!) {
     createdBy {
       name
     }
-    text
     image
     active
     createdAt
@@ -290,4 +289,8 @@ mutation AddAdmin($input: AdminRegisterInput!) {
 
 mutation AddService($input: [ServicesInput!]!) {
   addService(input: $input)
+}
+
+query GetContentUploadUrl($fileName: String!) {
+  getContentUploadUrl(fileName: $fileName)
 }

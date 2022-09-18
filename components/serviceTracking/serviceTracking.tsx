@@ -6,6 +6,7 @@ import {
   MenuItem,
   Modal,
   Select,
+  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -46,6 +47,8 @@ export default function ServiceTracking() {
   };
   const [approveLoading, setApproveLoading] = useState<string>("");
   const [approveProjQuery] = useApproveProjectLazyQuery();
+  const [showSnack, setShowSnack] = useState<boolean>(false);
+  const [snackMessage, setSnackMessage] = useState<string>();
   const approveProject = async (serviceId: string) => {
     setApproveLoading(serviceId);
     const response = await approveProjQuery({
@@ -55,7 +58,16 @@ export default function ServiceTracking() {
     });
     setApproveLoading("");
 
-    //need toast here
+    setSnackMessage("Project Approved");
+    setShowSnack(true);
+
+    let arr = [...data];
+    setData(
+      arr.map((el) => ({
+        ...el,
+        statusType: UserServiceStatus.Delivered,
+      }))
+    );
   };
   const columns: GridColDef[] = [
     {
@@ -73,7 +85,7 @@ export default function ServiceTracking() {
             variant="contained"
             onClick={() => assignService(cellValues)}
           >
-            {cellValues.row.assignedTo ? "Re-Assign" : "Assign"}
+            {cellValues.row.allotedTo ? "Re-Assign" : "Assign"}
           </Button>
         );
       },
@@ -87,7 +99,7 @@ export default function ServiceTracking() {
           <Button
             onClick={() => {
               const downloadA = document.createElement("a");
-              downloadA.href = String(cellValues.row.uploadedFiles[0]);
+              downloadA.href = String(cellValues.row.deliveredFiles[0]);
               downloadA.download = "true";
               downloadA.click();
             }}
@@ -150,7 +162,7 @@ export default function ServiceTracking() {
     { field: "paid", headerName: "Paid", width: 150 },
     { field: "allotedTo", headerName: "Assigned To", width: 150 },
     { field: "allotedBy", headerName: "Assigned By", width: 150 },
-    { field: "assignedTime", headerName: "Assigned At", width: 150 },
+    { field: "assignedTime", headerName: "Assigned At", width: 180 },
     { field: "statusType", headerName: "Status Type", width: 150 },
     { field: "mainCategory", headerName: "Main Category", width: 150 },
     { field: "subCategory", headerName: "Sub Category", width: 150 },
@@ -260,7 +272,6 @@ export default function ServiceTracking() {
           return { ...el };
         }
       });
-      console.log(newArr);
       setData(newArr);
       onClose();
     }
@@ -354,6 +365,13 @@ export default function ServiceTracking() {
           </Stack>
         </Box>
       </Modal>
+      <Snackbar
+        open={showSnack}
+        autoHideDuration={4000}
+        onClose={() => setShowSnack(false)}
+        message={snackMessage}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      />
     </>
   );
 }

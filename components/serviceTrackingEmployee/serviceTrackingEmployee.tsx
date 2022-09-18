@@ -193,7 +193,9 @@ export default function ServiceTrackingEmployee() {
         return;
       }
 
-      const { data, error } = await addDeliveryFile({
+      console.log(finalUploadedUrl);
+
+      const { data: finalData, error } = await addDeliveryFile({
         variables: {
           serviceId: serviceId?.toString() ?? "",
           url: finalUploadedUrl,
@@ -205,15 +207,31 @@ export default function ServiceTrackingEmployee() {
         setLoading(false);
         return;
       }
-      if (!data || !data.addDeliverFiles) {
+      if (!finalData || !finalData.addDeliverFiles) {
         setLoading(false);
         return;
       }
 
+      setData((prev) => {
+        let arr = [...prev];
+        arr.forEach((element) => {
+          if (element._id === serviceId) {
+            element.statusType === UserServiceStatus.Underreviewinternal;
+          }
+        });
+        return arr;
+      });
       setLoading(false);
       setOpenUpload(false);
       setSnackMessage("Files Uploaded Successfully");
       setShowSnack(true);
+      let arr = [...data];
+      setData(
+        arr.map((el) => ({
+          ...el,
+          statusType: UserServiceStatus.Underreviewinternal,
+        }))
+      );
     } catch (error: any) {}
   };
   const [confirmUpload] = useConfirmUploadLazyQuery();
@@ -401,7 +419,13 @@ export default function ServiceTrackingEmployee() {
     setConfirmButton("");
     if (!response.data) {
       //throw error
+      return;
     }
+
+    let arr = [...data];
+    setData(
+      arr.map((el) => ({ ...el, statusType: UserServiceStatus.Workinprogress }))
+    );
   };
   const handleSubmit = async () => {
     setLoadingButton(true);
@@ -416,7 +440,14 @@ export default function ServiceTrackingEmployee() {
       },
     });
 
-    if (response) onClose();
+    if (!response.data?.requestReupload) {
+      return;
+    }
+
+    let arr = [...data];
+    setData(
+      arr.map((el) => ({ ...el, statusType: UserServiceStatus.Pendingupload }))
+    );
   };
   const [data, setData] = useState<UserServices[]>([]);
   const [open, setOpen] = useState<boolean>(false);
