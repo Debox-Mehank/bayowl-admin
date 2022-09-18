@@ -13,10 +13,12 @@ const Home: NextPage = () => {
 
       if (response.error) {
         console.log(response.error);
+        setPageDecider("false");
         return;
       }
 
       if (!response.data || !response.data.meAdmin) {
+        setPageDecider("false");
         return;
       }
 
