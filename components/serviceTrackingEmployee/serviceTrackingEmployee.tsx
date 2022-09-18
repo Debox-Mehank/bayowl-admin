@@ -27,6 +27,7 @@ import {
   useUploadRevisionFilesMutation,
 } from "../../generated/graphql";
 import { formatBytesNumber } from "./utils/formatBytes";
+import moment from "moment";
 
 const style = {
   position: "absolute",
@@ -209,20 +210,34 @@ export default function ServiceTrackingEmployee() {
           return;
         }
       } else {
-        const { data, error } = await addDeliveryFile({
+        const { data: finalData, error } = await addDeliveryFile({
           variables: {
             serviceId: serviceId?.toString() ?? "",
             url: finalUploadedUrl,
           },
         });
+
+        //Handling Errors
         if (error) {
           setLoadingButton(false);
           return;
         }
-        if (!data || !data.addDeliverFiles) {
+        if (!finalData || !finalData.addDeliverFiles) {
           setLoadingButton(false);
           return;
         }
+
+        let arr = [...data];
+        setData(
+          arr.map((el) => ({
+            ...el,
+            statusType:
+              el._id === serviceId
+                ? UserServiceStatus.Underreviewinternal
+                : el.statusType,
+          }))
+        );
+        setLoadingButton(false);
       }
       //Handling Errors
       setStatusForUploading(null);
@@ -365,7 +380,7 @@ export default function ServiceTrackingEmployee() {
     {
       field: "revisionTimeByMaster",
       headerName: "Note Time",
-      width: 150,
+      width: 180,
     },
     {
       field: "revisionNotesByUser",
@@ -463,7 +478,19 @@ export default function ServiceTrackingEmployee() {
     setConfirmButton("");
     if (!response.data) {
       //throw error
+      return;
     }
+
+    let arr = [...data];
+    setData(
+      arr.map((el) => ({
+        ...el,
+        statusType:
+          el._id === serviceId
+            ? UserServiceStatus.Workinprogress
+            : el.statusType,
+      }))
+    );
   };
   const handleSubmit = async () => {
     setLoadingButton(true);
@@ -478,7 +505,19 @@ export default function ServiceTrackingEmployee() {
       },
     });
 
-    if (response) onClose();
+    if (!response.data?.requestReupload) {
+      return;
+    }
+
+    let arr = [...data];
+    setData(
+      arr.map((el) => ({
+        ...el,
+        statusType:
+          el._id === id ? UserServiceStatus.Pendingupload : el.statusType,
+      }))
+    );
+    onClose();
   };
   const [data, setData] = useState<UserServices[]>([]);
   const [open, setOpen] = useState<boolean>(false);
@@ -514,6 +553,9 @@ export default function ServiceTrackingEmployee() {
           response.data?.getAllServiceForEmployee.map((ind) => ({
             ...ind,
             id: ind._id,
+            revisionTimeByMaster: ind.revisionTimeByMaster
+              ? moment(ind.revisionTimeByMaster).format("MMM Do YY, hh:mm a")
+              : "",
             allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
             allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",
             revisionNotesByUser:
