@@ -18,6 +18,7 @@ import {
   Admin,
   AdminRole,
   Payment,
+  useAddRevisionNotesByMasterLazyQuery,
   useAllEmployeeLazyQuery,
   useApproveProjectLazyQuery,
   useAssignServiceMutation,
@@ -44,6 +45,8 @@ export default function ServiceTracking() {
     setOpen(true);
     setId(cell.row.id);
   };
+  const [openForReject, setOpenForReject] = useState<boolean>(false);
+  const [noteForReject, setNoteForReject] = useState<string>("");
   const [approveLoading, setApproveLoading] = useState<string>("");
   const [approveProjQuery] = useApproveProjectLazyQuery();
   const approveProject = async (serviceId: string) => {
@@ -93,7 +96,9 @@ export default function ServiceTracking() {
             }}
             disabled={
               cellValues.row.statusType ===
-              UserServiceStatus.Underreviewinternal
+                UserServiceStatus.Underreviewinternal ||
+              cellValues.row.statusType === UserServiceStatus.Delivered ||
+              cellValues.row.statusType === UserServiceStatus.Completed
                 ? false
                 : true
             }
@@ -140,11 +145,20 @@ export default function ServiceTracking() {
                 : true
             }
             variant="contained"
+            onClick={() => {
+              setOpenForReject(true);
+              setId(cellValues.row.id);
+            }}
           >
             Reject
           </Button>
         );
       },
+    },
+    {
+      field: "numberOfRevisionsByMaster",
+      headerName: "Number Of Rejections",
+      width: 150,
     },
     { field: "projectName", headerName: "Project Name", width: 150 },
     { field: "paid", headerName: "Paid", width: 150 },
@@ -270,6 +284,11 @@ export default function ServiceTracking() {
   const [emp, setEmp] = useState<string>("");
   const [empName, setEmpName] = useState<string>("");
   const [id, setId] = useState<string>("");
+  const onCloseForReject = () => {
+    setOpenForReject(false);
+    setNoteForReject("");
+    setId("");
+  };
   const onClose = () => {
     setLoadingButton(false);
     setOpen(false);
@@ -307,6 +326,25 @@ export default function ServiceTracking() {
   }, []);
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [addRevisionNote] = useAddRevisionNotesByMasterLazyQuery();
+  const handleSubmitForReject = async () => {
+    setLoadingButton(true);
+    if (noteForReject === "" || id === "") {
+      // error
+    } else {
+      const response = await addRevisionNote({
+        variables: {
+          serviceId: id,
+          note: noteForReject,
+        },
+      });
+
+      if (!response.data!.addRevisionNotesByMaster) {
+        //Handle error
+      }
+      onCloseForReject();
+    }
+  };
   // const [servicesData, setServicesData] = useState<Services[]>([]);
   return (
     <>
@@ -347,6 +385,35 @@ export default function ServiceTracking() {
             <LoadingButton
               variant="contained"
               onClick={handleSubmit}
+              loading={loadingButton}
+            >
+              Submit
+            </LoadingButton>
+          </Stack>
+        </Box>
+      </Modal>
+      <Modal
+        open={openForReject}
+        onClose={onCloseForReject}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Stack spacing={2}>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Note
+            </Typography>
+            <TextField
+              variant="outlined"
+              id="component-outlined"
+              value={noteForReject}
+              fullWidth
+              onChange={(e) => setNoteForReject(String(e.target.value))}
+              label="Note"
+            />
+            <LoadingButton
+              variant="contained"
+              onClick={handleSubmitForReject}
               loading={loadingButton}
             >
               Submit

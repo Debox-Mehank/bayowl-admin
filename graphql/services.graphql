@@ -51,6 +51,9 @@ fragment services on UserServices {
   submissionDate
   estDeliveryDate
   assignedTime
+  revisionNotesByMaster
+  revisionTimeByMaster
+  numberOfRevisionsByMaster
 }
 
 query GetAllService {
@@ -290,4 +293,8 @@ mutation AddAdmin($input: AdminRegisterInput!) {
 
 mutation AddService($input: [ServicesInput!]!) {
   addService(input: $input)
+}
+
+query AddRevisionNotesByMaster($note: String!, $serviceId: String!) {
+  addRevisionNotesByMaster(note: $note, serviceId: $serviceId)
 }
