@@ -38,6 +38,7 @@ fragment services on UserServices {
     file
     description
     revision
+    revisionFor
   }
   status {
     name

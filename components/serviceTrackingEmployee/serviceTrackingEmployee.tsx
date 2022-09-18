@@ -58,12 +58,18 @@ export default function ServiceTrackingEmployee() {
   const [multipartPresignedQuery] = useGetMultipartPreSignedUrlsLazyQuery();
   const [finalizeMultipartUploadQuery] = useFinalizeMultipartUploadLazyQuery();
   const [addDeliveryFile] = useAddDeliveryFilesLazyQuery();
-  const handleUploadSubmit = async (e: any, serviceId: string) => {
+  const handleUploadSubmit = async (
+    e: any,
+    serviceId: string,
+    revisionNumberF?: number
+  ) => {
     try {
       // For showing the upload progess
       let percentage: number | undefined = undefined;
       // Final zip file name uploaded to aws
-      const finalFileName = `deliveredFiles_${serviceId}`;
+      const finalFileName = revisionNumberF
+        ? `revisionFiles_${revisionNumberF}_${serviceId}`
+        : `deliveredFiles_${serviceId}`;
       const file = filesArray![0];
 
       let finalUploadedUrl: undefined | string = undefined;
@@ -197,18 +203,38 @@ export default function ServiceTrackingEmployee() {
         return;
       }
 
-      if (statusForUploading === UserServiceStatus.Revisionrequest) {
-        const { data, errors } = await uploadRevisionFiles({
-          variables: {
-            revisionNumber: revisionNumber,
-            fileUrl: finalUploadedUrl,
-            serviceId: serviceId,
-          },
-        });
-        if (!data || !data.uploadRevisionFiles) {
+      if (revisionNumberF) {
+        const { data: revisionUploadData, errors: revisionUploadErrors } =
+          await uploadRevisionFiles({
+            variables: {
+              revisionNumber: revisionNumberF,
+              fileUrl: finalUploadedUrl,
+              serviceId: serviceId,
+            },
+          });
+
+        if (revisionUploadErrors) {
+          setSnackMessage(revisionUploadErrors[0].message);
+          setShowSnack(true);
           setLoadingButton(false);
           return;
         }
+
+        if (!revisionUploadData || !revisionUploadData.uploadRevisionFiles) {
+          setLoadingButton(false);
+          return;
+        }
+        let arr = [...data];
+        setData(
+          arr.map((el) => ({
+            ...el,
+            statusType:
+              el._id === serviceId
+                ? UserServiceStatus.Revisiondelivered
+                : el.statusType,
+          }))
+        );
+        setLoadingButton(false);
       } else {
         const { data: finalData, error } = await addDeliveryFile({
           variables: {
@@ -239,7 +265,6 @@ export default function ServiceTrackingEmployee() {
         );
         setLoadingButton(false);
       }
-      //Handling Errors
       setStatusForUploading(null);
       setRevisionNumber(0);
       setLoadingButton(false);
@@ -326,7 +351,7 @@ export default function ServiceTrackingEmployee() {
     {
       field: "Upload",
       headerName: "Upload",
-      width: 150,
+      width: 200,
       renderCell: (cellValues) => {
         return (
           <>
@@ -347,7 +372,9 @@ export default function ServiceTrackingEmployee() {
                   : true
               }
             >
-              Upload
+              {cellValues.row.revisionFiles.length > 0
+                ? "Upload Revision"
+                : "Upload"}
             </Button>
           </>
         );
@@ -376,7 +403,7 @@ export default function ServiceTrackingEmployee() {
     {
       field: "revisionNotesByMaster",
       headerName: "Notes",
-      width: 150,
+      width: 180,
     },
     {
       field: "revisionTimeByMaster",
@@ -386,7 +413,12 @@ export default function ServiceTrackingEmployee() {
     {
       field: "revisionNotesByUser",
       headerName: "User Revision Notes",
-      width: 150,
+      width: 180,
+    },
+    {
+      field: "revisionFor",
+      headerName: "Revision Requested For",
+      width: 180,
     },
     { field: "paid", headerName: "Paid", width: 150 },
     { field: "statusType", headerName: "Status Type", width: 150 },
@@ -562,6 +594,16 @@ export default function ServiceTrackingEmployee() {
               ind.revisionFiles.length !== 0
                 ? ind.revisionFiles[ind.revisionFiles.length - 1].description
                 : "",
+            revisionFor:
+              ind.revisionFiles.length !== 0
+                ? ind.revisionFiles[ind.revisionFiles.length - 1]
+                    .revisionFor === 0
+                  ? "Original Upload"
+                  : `Revision - ${
+                      ind.revisionFiles[ind.revisionFiles.length - 1]
+                        .revisionFor
+                    }`
+                : "",
             revisionNumber:
               ind.revisionFiles.length !== 0
                 ? ind.revisionFiles[ind.revisionFiles.length - 1].revision
@@ -624,7 +666,7 @@ export default function ServiceTrackingEmployee() {
             </label>
             <LoadingButton
               variant="contained"
-              onClick={(e) => handleUploadSubmit(e, id)}
+              onClick={(e) => handleUploadSubmit(e, id, revisionNumber)}
               loading={loadingButton}
             >
               Submit
