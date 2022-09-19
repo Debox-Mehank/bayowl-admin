@@ -183,8 +183,10 @@ export type Query = {
   me: User;
   meAdmin?: Maybe<Admin>;
   register: Scalars['Boolean'];
+  removeService: Scalars['Boolean'];
   requestReupload: Scalars['Boolean'];
   requestRevision: Scalars['Boolean'];
+  resetPassword: Scalars['Boolean'];
   toggleDashboardContent: DashboardContent;
   updateDashboardContent: Scalars['Boolean'];
   updatePorjectName: Scalars['Boolean'];
@@ -299,6 +301,11 @@ export type QueryRegisterArgs = {
 };
 
 
+export type QueryRemoveServiceArgs = {
+  serviceId: Scalars['String'];
+};
+
+
 export type QueryRequestReuploadArgs = {
   reuploadNote: Scalars['String'];
   serviceId: Scalars['String'];
@@ -310,6 +317,12 @@ export type QueryRequestRevisionArgs = {
   revisionForNumber: Scalars['Float'];
   revisionNumber: Scalars['Float'];
   serviceId: Scalars['String'];
+};
+
+
+export type QueryResetPasswordArgs = {
+  id: Scalars['String'];
+  password: Scalars['String'];
 };
 
 
@@ -703,6 +716,14 @@ export type GetContentUploadUrlQueryVariables = Exact<{
 
 
 export type GetContentUploadUrlQuery = { __typename?: 'Query', getContentUploadUrl: string };
+
+export type ResetPasswordQueryVariables = Exact<{
+  password: Scalars['String'];
+  resetPasswordId: Scalars['String'];
+}>;
+
+
+export type ResetPasswordQuery = { __typename?: 'Query', resetPassword: boolean };
 
 export type AddRevisionNotesByMasterQueryVariables = Exact<{
   note: Scalars['String'];
@@ -1738,6 +1759,40 @@ export function useGetContentUploadUrlLazyQuery(baseOptions?: Apollo.LazyQueryHo
 export type GetContentUploadUrlQueryHookResult = ReturnType<typeof useGetContentUploadUrlQuery>;
 export type GetContentUploadUrlLazyQueryHookResult = ReturnType<typeof useGetContentUploadUrlLazyQuery>;
 export type GetContentUploadUrlQueryResult = Apollo.QueryResult<GetContentUploadUrlQuery, GetContentUploadUrlQueryVariables>;
+export const ResetPasswordDocument = gql`
+    query ResetPassword($password: String!, $resetPasswordId: String!) {
+  resetPassword(password: $password, id: $resetPasswordId)
+}
+    `;
+
+/**
+ * __useResetPasswordQuery__
+ *
+ * To run a query within a React component, call `useResetPasswordQuery` and pass it any options that fit your needs.
+ * When your component renders, `useResetPasswordQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useResetPasswordQuery({
+ *   variables: {
+ *      password: // value for 'password'
+ *      resetPasswordId: // value for 'resetPasswordId'
+ *   },
+ * });
+ */
+export function useResetPasswordQuery(baseOptions: Apollo.QueryHookOptions<ResetPasswordQuery, ResetPasswordQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ResetPasswordQuery, ResetPasswordQueryVariables>(ResetPasswordDocument, options);
+      }
+export function useResetPasswordLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ResetPasswordQuery, ResetPasswordQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ResetPasswordQuery, ResetPasswordQueryVariables>(ResetPasswordDocument, options);
+        }
+export type ResetPasswordQueryHookResult = ReturnType<typeof useResetPasswordQuery>;
+export type ResetPasswordLazyQueryHookResult = ReturnType<typeof useResetPasswordLazyQuery>;
+export type ResetPasswordQueryResult = Apollo.QueryResult<ResetPasswordQuery, ResetPasswordQueryVariables>;
 export const AddRevisionNotesByMasterDocument = gql`
     query AddRevisionNotesByMaster($note: String!, $serviceId: String!) {
   addRevisionNotesByMaster(note: $note, serviceId: $serviceId)

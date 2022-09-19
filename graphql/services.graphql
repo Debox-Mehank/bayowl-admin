@@ -311,6 +311,10 @@ query GetContentUploadUrl($fileName: String!) {
   getContentUploadUrl(fileName: $fileName)
 }
 
+query ResetPassword($password: String!, $resetPasswordId: String!) {
+  resetPassword(password: $password, id: $resetPasswordId)
+}
+
 query AddRevisionNotesByMaster($note: String!, $serviceId: String!) {
   addRevisionNotesByMaster(note: $note, serviceId: $serviceId)
 }

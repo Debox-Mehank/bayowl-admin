@@ -24,6 +24,7 @@ import {
   AdminRole,
   useAddAdminMutation,
   useAllAdminsLazyQuery,
+  useResetPasswordLazyQuery,
 } from "../../generated/graphql";
 import { LoadingButton } from "@mui/lab";
 import generate from "generate-password-ts";
@@ -54,6 +55,7 @@ export default function TAM() {
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [type, setType] = useState<AdminRole>(AdminRole.Employee);
+  const [resetPassword] = useResetPasswordLazyQuery();
   const [password, setPassword] = useState<string>(
     generate.generate({
       length: 10,
@@ -94,6 +96,20 @@ export default function TAM() {
   };
   const handleSubmit = async () => {
     setLoadingButton(true);
+    if (reset) {
+      const { data, error } = await resetPassword({
+        variables: {
+          resetPasswordId: id,
+          password: password,
+        },
+      });
+
+      if (error) {
+        // throw error
+      }
+
+      onClose();
+    }
     if (!validateEmail(email)) {
       //throw something
       setLoadingButton(false);
@@ -129,6 +145,12 @@ export default function TAM() {
       onClose();
     }
   };
+  const [reset, setReset] = useState<boolean>(false);
+  const [id, setId] = useState<string>("");
+  const onResetClick = (id: string) => {
+    setId(id);
+    setReset(true);
+  };
   const [columns, setColumns] = useState<GridColDef[]>([
     { field: "name", headerName: "Name", width: 150 },
     { field: "email", headerName: "Email", width: 150 },
@@ -136,6 +158,18 @@ export default function TAM() {
     { field: "createdBy", headerName: "Created By", width: 150 },
     { field: "createdAt", headerName: "Created At", width: 150 },
     { field: "updatedAt", headerName: "Updated At", width: 150 },
+    {
+      field: "resetPassword",
+      headerName: "Reset Password",
+      width: 150,
+      renderCell: (cellValues) => {
+        return (
+          <Button onClick={() => onResetClick(cellValues.row.id)}>
+            Reset Password
+          </Button>
+        );
+      },
+    },
   ]);
   const [open, setOpen] = useState<boolean>(false);
   function CustomToolbar() {
@@ -156,6 +190,8 @@ export default function TAM() {
     setOpen(false);
     setName("");
     setEmail("");
+    setId("");
+    setReset(false);
     setPassword(
       generate.generate({
         length: 10,
@@ -184,47 +220,53 @@ export default function TAM() {
         loading={loading}
       />
       <Modal
-        open={open}
+        open={open || reset}
         onClose={onClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
           <Stack spacing={2}>
-            <Typography id="modal-modal-title" variant="h6" component="h2">
-              Name
-            </Typography>
-            <TextField
-              variant="outlined"
-              id="component-outlined"
-              value={name}
-              fullWidth
-              onChange={(e) => setName(String(e.target.value))}
-              label="Name"
-            />
-            <Typography id="modal-modal-title" variant="h6" component="h2">
-              Email
-            </Typography>
-            <TextField
-              variant="outlined"
-              id="component-outlined"
-              value={email}
-              fullWidth
-              onChange={(e) => setEmail(String(e.target.value))}
-              label="Email"
-            />
-            <Typography id="modal-modal-title" variant="h6" component="h2">
-              Type
-            </Typography>
-            <Select
-              value={type}
-              onChange={(e) => setType(e.target.value as AdminRole)}
-            >
-              <MenuItem value={AdminRole.Manager}>{AdminRole.Manager}</MenuItem>
-              <MenuItem value={AdminRole.Employee}>
-                {AdminRole.Employee}
-              </MenuItem>
-            </Select>
+            {reset === false && (
+              <>
+                <Typography id="modal-modal-title" variant="h6" component="h2">
+                  Name
+                </Typography>
+                <TextField
+                  variant="outlined"
+                  id="component-outlined"
+                  value={name}
+                  fullWidth
+                  onChange={(e) => setName(String(e.target.value))}
+                  label="Name"
+                />
+                <Typography id="modal-modal-title" variant="h6" component="h2">
+                  Email
+                </Typography>
+                <TextField
+                  variant="outlined"
+                  id="component-outlined"
+                  value={email}
+                  fullWidth
+                  onChange={(e) => setEmail(String(e.target.value))}
+                  label="Email"
+                />
+                <Typography id="modal-modal-title" variant="h6" component="h2">
+                  Type
+                </Typography>
+                <Select
+                  value={type}
+                  onChange={(e) => setType(e.target.value as AdminRole)}
+                >
+                  <MenuItem value={AdminRole.Manager}>
+                    {AdminRole.Manager}
+                  </MenuItem>
+                  <MenuItem value={AdminRole.Employee}>
+                    {AdminRole.Employee}
+                  </MenuItem>
+                </Select>
+              </>
+            )}
             <Typography id="modal-modal-title" variant="h6" component="h2">
               Password
             </Typography>
