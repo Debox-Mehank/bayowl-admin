@@ -72,6 +72,11 @@ export default function ServiceTracking() {
   const columns: GridColDef[] = [
     { field: "projectName", headerName: "Project Name", width: 150 },
     {
+      field: "paidAtMoment",
+      headerName: "Service Purchase Date",
+      width: 200,
+    },
+    {
       field: "assign",
       headerName: "Assign",
       width: 150,
@@ -168,7 +173,7 @@ export default function ServiceTracking() {
     { field: "statusType", headerName: "Final Project Status", width: 200 },
     {
       field: "numberOfRevisionsByMaster",
-      headerName: "Number Of Internal Rejections",
+      headerName: "Number Of Internal Revisions",
       width: 200,
     },
     {
@@ -177,20 +182,25 @@ export default function ServiceTracking() {
       width: 200,
     },
     {
+      field: "revisionNotesByMaster",
+      headerName: "Internal Rejection Notes",
+      width: 200,
+    },
+    {
+      field: "revisionNotesByUser",
+      headerName: "Customer Revision Notes",
+      width: 200,
+    },
+    {
+      field: "customerRejectionTime",
+      headerName: "Customer Revision Time",
+      width: 200,
+    },
+    {
       field: "masterProjectApprovalTimeMoment",
       headerName: "Project Approval Time",
       width: 200,
     },
-    // {
-    //   field: "revisionNotesByUser",
-    //   headerName: "Customer Rejection Notes",
-    //   width: 200,
-    // },
-    // {
-    //   field: "customerRejectionTime",
-    //   headerName: "Customer Rejection Time",
-    //   width: 200,
-    // },
     {
       field: "completionDate",
       headerName: "Customer Approval Time",
@@ -334,22 +344,25 @@ export default function ServiceTracking() {
       const response = await getAllServiceForEmployee({
         fetchPolicy: "network-only",
       });
+
       if (response.data?.getAllServiceForMaster) {
         const finalData = response.data?.getAllServiceForMaster.map((ind) => ({
           ...ind,
           id: ind._id,
+          paidAtMoment: moment(ind.paidAt).format("MMM Do YY, hh:mm"),
           allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
           allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",
-          // revisionNotesByUser:
-          //   ind.revisionFiles.length !== 0
-          //     ? ind.revisionFiles[ind.revisionFiles.length - 1].description
-          //     : "",
-          // customerRejectionTime:
-          //   ind.revisionFiles.length !== 0
-          //     ? moment(
-          //         ind.revisionFiles[ind.revisionFiles.length - 1].revisionTime
-          //       ).format("MMM Do YY, hh:mm")
-          //     : "",
+          revisionNotesByMaster: ind.revisionNotesByMaster ?? "",
+          revisionNotesByUser:
+            ind.revisionFiles.length !== 0
+              ? ind.revisionFiles[ind.revisionFiles.length - 1].description
+              : "",
+          customerRejectionTime:
+            ind.revisionFiles.length !== 0
+              ? moment(
+                  ind.revisionFiles[ind.revisionFiles.length - 1].revisionTime
+                ).format("MMM Do YY, hh:mm")
+              : "",
           assignedTime: ind.assignedTime
             ? moment(ind.assignedTime).format("MMM Do YY, hh:mm")
             : "",
