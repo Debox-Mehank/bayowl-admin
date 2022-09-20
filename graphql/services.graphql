@@ -39,6 +39,7 @@ fragment services on UserServices {
     description
     revision
     revisionFor
+    revisionTime
   }
   status {
     name
@@ -57,6 +58,7 @@ fragment services on UserServices {
   revisionTimeByMaster
   numberOfRevisionsByMaster
   masterProjectApprovalTime
+  completionDate
 }
 
 query GetAllService {
