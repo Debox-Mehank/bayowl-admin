@@ -4,7 +4,7 @@ export enum ListOfService {
   TAM = "TAM",
   Services = "Services",
   Payments = "Payments",
-  ServiceTracking = "ServiceTracking",
-  ServiceTrackingEmployee = "ServiceTrackingEmployee",
-  DashboardContent = "DashboardContent",
+  ServiceTracking = "All Service Tracking",
+  ServiceTrackingEmployee = "Service Tracking",
+  DashboardContent = "Dashboard Content",
 }

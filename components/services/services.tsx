@@ -94,6 +94,16 @@ const columns: GridColDef[] = [
     headerName: "Add on: 30s Duration",
     width: 150,
   },
+  {
+    field: "Additional Exports: Bus Stems",
+    headerName: "Additional Exports: Bus Stems",
+    width: 150,
+  },
+  {
+    field: "Additional Exports: Multitracks",
+    headerName: "Additional Exports: Multitracks",
+    width: 150,
+  },
 ];
 
 export default function Service() {
@@ -184,14 +194,27 @@ export default function Service() {
             {
               type: "Extra Revision",
               value: el[21] === "" ? null : parseInt(el[21]),
+              main: false,
             },
             {
               type: "Add on: 10 Tracks",
               value: el[22] === "" ? null : parseInt(el[22]),
+              main: true,
             },
             {
               type: "Add on: 30s Duration",
               value: el[23] === "" ? null : parseInt(el[23]),
+              main: true,
+            },
+            {
+              type: "Additional Exports: Bus Stems",
+              value: el[24] === "" ? null : parseInt(el[24]),
+              main: false,
+            },
+            {
+              type: "Additional Exports: Multitracks",
+              value: el[25] === "" ? null : parseInt(el[25]),
+              main: false,
             },
           ],
         }));

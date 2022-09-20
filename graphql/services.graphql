@@ -16,6 +16,7 @@ fragment services on UserServices {
     type
     value
     qty
+    main
   }
   deliveryDays
   updatedAt
@@ -59,6 +60,12 @@ fragment services on UserServices {
   numberOfRevisionsByMaster
   masterProjectApprovalTime
   completionDate
+  addOnExportsBusStems
+  addOnExportsFile
+  addOnExportsMultitrack
+  addOnExtraRevision
+  paidAt
+  wrokingFile
 }
 
 query GetAllService {
@@ -89,6 +96,7 @@ query GetAllService {
       type
       value
       qty
+      main
     }
     createdAt
     updatedAt

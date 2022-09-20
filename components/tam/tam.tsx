@@ -136,7 +136,9 @@ export default function TAM() {
           name: name,
           email: email,
           type: type,
-          createdBy: "Yash",
+          createdBy: localStorage.getItem("admin")
+            ? JSON.parse(localStorage.getItem("admin")!)?.name ?? ""
+            : "",
           createdAt: new Date(),
           updatedAt: new Date(),
         });

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import MuiDrawer from "@mui/material/Drawer";
@@ -23,6 +23,7 @@ import DashboardContentPage from "../dashboardContent/dashboardContent";
 import Dashboard from "../dashboard/dashboard";
 import { LoadingButton } from "@mui/lab";
 import { useLogoutLazyQuery } from "../../generated/graphql";
+import { Avatar } from "@mui/material";
 const drawerWidth: number = 240;
 
 interface AppBarProps extends MuiAppBarProps {
@@ -95,6 +96,8 @@ const Drawer = styled(MuiDrawer, {
 function Layout({ typeRole }: { typeRole: string }) {
   const [open, setOpen] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
+  const [name, setName] = useState<string>("");
+  const [role, setRole] = useState<string>("");
   const [currentService, setCurrentService] = useState<ListOfService>(
     typeRole === "master"
       ? ListOfService.Dashboard
@@ -131,11 +134,22 @@ function Layout({ typeRole }: { typeRole: string }) {
 
   const logoutFunc = async () => {
     setLoading(true);
-    await logout();
     localStorage.clear();
+    await logout();
     setLoading(false);
     window.location.reload();
   };
+
+  useEffect(() => {
+    const localAdmin = localStorage.getItem("admin");
+
+    if (localAdmin) {
+      const finalAdmin = JSON.parse(localAdmin);
+      setName(finalAdmin.name);
+      setRole(finalAdmin.type);
+    }
+  }, [localStorage.getItem("admin")]);
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -164,7 +178,7 @@ function Layout({ typeRole }: { typeRole: string }) {
             noWrap
             sx={{ flexGrow: 1 }}
           >
-            Dashboard
+            Admin Panel
           </Typography>
           <LoadingButton
             variant="outlined"
@@ -181,10 +195,46 @@ function Layout({ typeRole }: { typeRole: string }) {
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "flex-end",
+            justifyContent: "space-between",
             px: [1],
           }}
         >
+          {name && role && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Avatar
+                sx={{ bgcolor: "beige", width: 36, height: 36, fontSize: 16 }}
+              >
+                {name.charAt(0)}
+              </Avatar>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "flex-start",
+                  flexDirection: "column",
+                  marginLeft: 1,
+                }}
+              >
+                <Typography variant="subtitle2" color="inherit" noWrap>
+                  {name}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="inherit"
+                  noWrap
+                  sx={{ textTransform: "capitalize" }}
+                >
+                  {role}
+                </Typography>
+              </Box>
+            </Box>
+          )}
           <IconButton onClick={toggleDrawer}>
             <ChevronLeftIcon />
           </IconButton>

@@ -380,6 +380,46 @@ export default function ServiceTrackingEmployee() {
         );
       },
     },
+    {
+      field: "Upload Add On",
+      headerName: "Upload Add On",
+      width: 200,
+      renderCell: (cellValues) => {
+        return (
+          <>
+            <Button
+              variant="contained"
+              onClick={(e) => {}}
+              disabled={
+                cellValues.row.statusType !== UserServiceStatus.Completed
+              }
+            >
+              Upload
+            </Button>
+          </>
+        );
+      },
+    },
+    {
+      field: "Upload Working Files",
+      headerName: "Upload Working Files",
+      width: 200,
+      renderCell: (cellValues) => {
+        return (
+          <>
+            <Button
+              variant="contained"
+              onClick={(e) => {}}
+              disabled={
+                cellValues.row.statusType !== UserServiceStatus.Completed
+              }
+            >
+              Upload
+            </Button>
+          </>
+        );
+      },
+    },
     // {
     //   field: "Request Reupload",
     //   headerName: "Request Reupload",
@@ -402,17 +442,17 @@ export default function ServiceTrackingEmployee() {
     // },
     {
       field: "revisionNotesByMaster",
-      headerName: "Notes",
+      headerName: "Internal Notes",
       width: 180,
     },
     {
       field: "revisionTimeByMaster",
-      headerName: "Note Time",
+      headerName: "Internal Notes Time",
       width: 180,
     },
     {
       field: "revisionNotesByUser",
-      headerName: "Customer Rejection Notes",
+      headerName: "Customer Revision Notes",
       width: 180,
     },
     {

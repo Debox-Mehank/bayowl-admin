@@ -168,7 +168,7 @@ export default function ServiceTracking() {
     { field: "statusType", headerName: "Final Project Status", width: 200 },
     {
       field: "numberOfRevisionsByMaster",
-      headerName: "Number Of Rejections",
+      headerName: "Number Of Internal Rejections",
       width: 200,
     },
     {
@@ -181,16 +181,16 @@ export default function ServiceTracking() {
       headerName: "Project Approval Time",
       width: 200,
     },
-    {
-      field: "revisionNotesByUser",
-      headerName: "Customer Rejection Notes",
-      width: 200,
-    },
-    {
-      field: "customerRejectionTime",
-      headerName: "Customer Rejection Time",
-      width: 200,
-    },
+    // {
+    //   field: "revisionNotesByUser",
+    //   headerName: "Customer Rejection Notes",
+    //   width: 200,
+    // },
+    // {
+    //   field: "customerRejectionTime",
+    //   headerName: "Customer Rejection Time",
+    //   width: 200,
+    // },
     {
       field: "completionDate",
       headerName: "Customer Approval Time",
@@ -335,39 +335,39 @@ export default function ServiceTracking() {
         fetchPolicy: "network-only",
       });
       if (response.data?.getAllServiceForMaster) {
-        setData(
-          response.data?.getAllServiceForMaster.map((ind) => ({
-            ...ind,
-            id: ind._id,
-            allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
-            allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",
-            revisionNotesByUser:
-              ind.revisionFiles.length !== 0
-                ? ind.revisionFiles[ind.revisionFiles.length - 1].description
-                : "",
-            customerRejectionTime:
-              ind.revisionFiles.length !== 0
-                ? moment(
-                    ind.revisionFiles[ind.revisionFiles.length - 1].revisionTime
-                  ).format("MMM Do YY, hh:mm")
-                : "",
-            assignedTime: ind.assignedTime
-              ? moment(ind.assignedTime).format("MMM Do YY, hh:mm")
-              : "",
-            revisionTimeByMasterMoment: ind.revisionTimeByMaster
-              ? moment(ind.revisionTimeByMaster).format("MMM Do YY, hh:mm")
-              : "",
-            masterProjectApprovalTimeMoment: ind.masterProjectApprovalTime
-              ? moment(ind.masterProjectApprovalTime).format("MMM Do YY, hh:mm")
-              : "",
-          })) ?? []
-        );
+        const finalData = response.data?.getAllServiceForMaster.map((ind) => ({
+          ...ind,
+          id: ind._id,
+          allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
+          allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",
+          // revisionNotesByUser:
+          //   ind.revisionFiles.length !== 0
+          //     ? ind.revisionFiles[ind.revisionFiles.length - 1].description
+          //     : "",
+          // customerRejectionTime:
+          //   ind.revisionFiles.length !== 0
+          //     ? moment(
+          //         ind.revisionFiles[ind.revisionFiles.length - 1].revisionTime
+          //       ).format("MMM Do YY, hh:mm")
+          //     : "",
+          assignedTime: ind.assignedTime
+            ? moment(ind.assignedTime).format("MMM Do YY, hh:mm")
+            : "",
+          revisionTimeByMasterMoment: ind.revisionTimeByMaster
+            ? moment(ind.revisionTimeByMaster).format("MMM Do YY, hh:mm")
+            : "",
+          masterProjectApprovalTimeMoment: ind.masterProjectApprovalTime
+            ? moment(ind.masterProjectApprovalTime).format("MMM Do YY, hh:mm")
+            : "",
+        }));
+        console.log(finalData);
+        setData(finalData ?? []);
       }
       const allEmps = await getAllEmployees();
       if (allEmps.data?.allEmployee) {
         setAllEmp(allEmps.data?.allEmployee);
-        setEmp(allEmps.data.allEmployee[0]._id!);
-        setEmpName(allEmps.data.allEmployee[0].name!);
+        setEmp(allEmps.data.allEmployee[0]?._id ?? "");
+        setEmpName(allEmps.data.allEmployee[0]?.name ?? "");
       }
       setLoading(false);
     };
