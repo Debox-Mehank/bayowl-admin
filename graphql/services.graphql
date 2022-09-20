@@ -56,6 +56,7 @@ fragment services on UserServices {
   revisionNotesByMaster
   revisionTimeByMaster
   numberOfRevisionsByMaster
+  masterProjectApprovalTime
 }
 
 query GetAllService {

@@ -412,7 +412,7 @@ export default function ServiceTrackingEmployee() {
     },
     {
       field: "revisionNotesByUser",
-      headerName: "User Revision Notes",
+      headerName: "Customer Rejection Notes",
       width: 180,
     },
     {
