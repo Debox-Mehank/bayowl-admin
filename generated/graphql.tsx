@@ -151,12 +151,36 @@ export type Payment = {
   userServiceId?: Maybe<Scalars['String']>;
 };
 
+export type PaymentConfig = {
+  __typename?: 'PaymentConfig';
+  _id: Scalars['ID'];
+  active: Scalars['Boolean'];
+  createdAt: Scalars['DateTime'];
+  lastUpdatedBy?: Maybe<Admin>;
+  type?: Maybe<PaymentConfigEnum>;
+  updatedAt: Scalars['DateTime'];
+  value: Scalars['Float'];
+};
+
+/** Enum For Type of Payment Configs */
+export enum PaymentConfigEnum {
+  Gst = 'gst'
+}
+
+export type PaymentConfigInput = {
+  active: Scalars['Boolean'];
+  lastUpdatedBy?: InputMaybe<Scalars['ID']>;
+  type?: InputMaybe<PaymentConfigEnum>;
+  value: Scalars['Float'];
+};
+
 export type Query = {
   __typename?: 'Query';
   activeDashboardContent: Array<DashboardContent>;
   addAddOnExportsFile: Scalars['Boolean'];
   addDashboardContent: DashboardContent;
   addDeliverFiles: Scalars['Boolean'];
+  addPaymentConfig: Scalars['Boolean'];
   addRevisionNotesByMaster: Scalars['Boolean'];
   addWorkingFile: Scalars['Boolean'];
   adminLogin: Scalars['Boolean'];
@@ -170,11 +194,13 @@ export type Query = {
   dashboardMet: Array<DashboardInterfaceClass>;
   finalizeMultipartUpload?: Maybe<Scalars['String']>;
   getAllPayment: Array<Payment>;
+  getAllPaymentConfig: Array<PaymentConfig>;
   getAllService: Array<Services>;
   getAllServiceForEmployee: Array<UserServices>;
   getAllServiceForMaster: Array<UserServices>;
   getAllUser: Array<User>;
   getContentUploadUrl: Scalars['String'];
+  getGstStatus: Scalars['Boolean'];
   getMultipartPreSignedUrls: Array<MultipartSignedUrlResponse>;
   getS3SignedURL: Scalars['String'];
   getServiceDetails: Array<Services>;
@@ -193,6 +219,8 @@ export type Query = {
   resetPassword: Scalars['Boolean'];
   toggleDashboardContent: DashboardContent;
   updateDashboardContent: Scalars['Boolean'];
+  updateFreeUser: Scalars['Boolean'];
+  updatePaymentConfig: Scalars['Boolean'];
   updatePorjectName: Scalars['Boolean'];
   uploadFilesForService: Scalars['Boolean'];
   verifyUser: Scalars['Boolean'];
@@ -213,6 +241,11 @@ export type QueryAddDashboardContentArgs = {
 export type QueryAddDeliverFilesArgs = {
   serviceId: Scalars['String'];
   url: Scalars['String'];
+};
+
+
+export type QueryAddPaymentConfigArgs = {
+  input: PaymentConfigInput;
 };
 
 
@@ -291,7 +324,6 @@ export type QueryInitFileUploadArgs = {
 
 
 export type QueryInitiatePaymentArgs = {
-  email?: InputMaybe<Scalars['String']>;
   service: UserServicesInput;
 };
 
@@ -350,6 +382,17 @@ export type QueryToggleDashboardContentArgs = {
 export type QueryUpdateDashboardContentArgs = {
   id: Scalars['String'];
   input: DashboardContentInput;
+};
+
+
+export type QueryUpdateFreeUserArgs = {
+  free: Scalars['Boolean'];
+  id: Scalars['String'];
+};
+
+
+export type QueryUpdatePaymentConfigArgs = {
+  gst: Scalars['Boolean'];
 };
 
 
@@ -464,8 +507,10 @@ export type User = {
   accountVerified: Scalars['Boolean'];
   createdAt: Scalars['DateTime'];
   email: Scalars['String'];
+  free?: Maybe<Scalars['Boolean']>;
   lastLoggedIn?: Maybe<Scalars['DateTime']>;
   lastLoggedOut?: Maybe<Scalars['DateTime']>;
+  lastUpdatedBy?: Maybe<Admin>;
   name?: Maybe<Scalars['String']>;
   number?: Maybe<Scalars['String']>;
   services: Array<UserServices>;
@@ -581,7 +626,7 @@ export type GetAllServiceQuery = { __typename?: 'Query', getAllService: Array<{ 
 export type GetAllUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAllUserQuery = { __typename?: 'Query', getAllUser: Array<{ __typename?: 'User', _id: string, name?: string | null, email: string, number?: string | null, lastLoggedIn?: any | null, lastLoggedOut?: any | null, accountVerified: boolean, createdAt: any, updatedAt: any, services: Array<{ __typename?: 'UserServices', _id: string, statusType: UserServiceStatus, status: Array<{ __typename?: 'ServiceStatusObject', name?: UserServiceStatus | null, state: ServiceStatusObjectState }> }> }> };
+export type GetAllUserQuery = { __typename?: 'Query', getAllUser: Array<{ __typename?: 'User', _id: string, name?: string | null, email: string, number?: string | null, free?: boolean | null, lastLoggedIn?: any | null, lastLoggedOut?: any | null, accountVerified: boolean, createdAt: any, updatedAt: any, services: Array<{ __typename?: 'UserServices', _id: string, statusType: UserServiceStatus, status: Array<{ __typename?: 'ServiceStatusObject', name?: UserServiceStatus | null, state: ServiceStatusObjectState }> }> }> };
 
 export type GetAllPaymentQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -757,6 +802,26 @@ export type AddRevisionNotesByMasterQueryVariables = Exact<{
 
 export type AddRevisionNotesByMasterQuery = { __typename?: 'Query', addRevisionNotesByMaster: boolean };
 
+export type GetAllPaymentConfigQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAllPaymentConfigQuery = { __typename?: 'Query', getAllPaymentConfig: Array<{ __typename?: 'PaymentConfig', _id: string, type?: PaymentConfigEnum | null, value: number, active: boolean, updatedAt: any, lastUpdatedBy?: { __typename?: 'Admin', name?: string | null } | null }> };
+
+export type UpdatePaymentConfigQueryVariables = Exact<{
+  gst: Scalars['Boolean'];
+}>;
+
+
+export type UpdatePaymentConfigQuery = { __typename?: 'Query', updatePaymentConfig: boolean };
+
+export type UpdateFreeUserQueryVariables = Exact<{
+  free: Scalars['Boolean'];
+  updateFreeUserId: Scalars['String'];
+}>;
+
+
+export type UpdateFreeUserQuery = { __typename?: 'Query', updateFreeUser: boolean };
+
 export const ServicesFragmentDoc = gql`
     fragment services on UserServices {
   _id
@@ -898,6 +963,7 @@ export const GetAllUserDocument = gql`
     name
     email
     number
+    free
     services {
       _id
       statusType
@@ -1862,3 +1928,111 @@ export function useAddRevisionNotesByMasterLazyQuery(baseOptions?: Apollo.LazyQu
 export type AddRevisionNotesByMasterQueryHookResult = ReturnType<typeof useAddRevisionNotesByMasterQuery>;
 export type AddRevisionNotesByMasterLazyQueryHookResult = ReturnType<typeof useAddRevisionNotesByMasterLazyQuery>;
 export type AddRevisionNotesByMasterQueryResult = Apollo.QueryResult<AddRevisionNotesByMasterQuery, AddRevisionNotesByMasterQueryVariables>;
+export const GetAllPaymentConfigDocument = gql`
+    query GetAllPaymentConfig {
+  getAllPaymentConfig {
+    _id
+    type
+    value
+    active
+    lastUpdatedBy {
+      name
+    }
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useGetAllPaymentConfigQuery__
+ *
+ * To run a query within a React component, call `useGetAllPaymentConfigQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetAllPaymentConfigQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetAllPaymentConfigQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetAllPaymentConfigQuery(baseOptions?: Apollo.QueryHookOptions<GetAllPaymentConfigQuery, GetAllPaymentConfigQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetAllPaymentConfigQuery, GetAllPaymentConfigQueryVariables>(GetAllPaymentConfigDocument, options);
+      }
+export function useGetAllPaymentConfigLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetAllPaymentConfigQuery, GetAllPaymentConfigQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetAllPaymentConfigQuery, GetAllPaymentConfigQueryVariables>(GetAllPaymentConfigDocument, options);
+        }
+export type GetAllPaymentConfigQueryHookResult = ReturnType<typeof useGetAllPaymentConfigQuery>;
+export type GetAllPaymentConfigLazyQueryHookResult = ReturnType<typeof useGetAllPaymentConfigLazyQuery>;
+export type GetAllPaymentConfigQueryResult = Apollo.QueryResult<GetAllPaymentConfigQuery, GetAllPaymentConfigQueryVariables>;
+export const UpdatePaymentConfigDocument = gql`
+    query UpdatePaymentConfig($gst: Boolean!) {
+  updatePaymentConfig(gst: $gst)
+}
+    `;
+
+/**
+ * __useUpdatePaymentConfigQuery__
+ *
+ * To run a query within a React component, call `useUpdatePaymentConfigQuery` and pass it any options that fit your needs.
+ * When your component renders, `useUpdatePaymentConfigQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useUpdatePaymentConfigQuery({
+ *   variables: {
+ *      gst: // value for 'gst'
+ *   },
+ * });
+ */
+export function useUpdatePaymentConfigQuery(baseOptions: Apollo.QueryHookOptions<UpdatePaymentConfigQuery, UpdatePaymentConfigQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<UpdatePaymentConfigQuery, UpdatePaymentConfigQueryVariables>(UpdatePaymentConfigDocument, options);
+      }
+export function useUpdatePaymentConfigLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<UpdatePaymentConfigQuery, UpdatePaymentConfigQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<UpdatePaymentConfigQuery, UpdatePaymentConfigQueryVariables>(UpdatePaymentConfigDocument, options);
+        }
+export type UpdatePaymentConfigQueryHookResult = ReturnType<typeof useUpdatePaymentConfigQuery>;
+export type UpdatePaymentConfigLazyQueryHookResult = ReturnType<typeof useUpdatePaymentConfigLazyQuery>;
+export type UpdatePaymentConfigQueryResult = Apollo.QueryResult<UpdatePaymentConfigQuery, UpdatePaymentConfigQueryVariables>;
+export const UpdateFreeUserDocument = gql`
+    query UpdateFreeUser($free: Boolean!, $updateFreeUserId: String!) {
+  updateFreeUser(free: $free, id: $updateFreeUserId)
+}
+    `;
+
+/**
+ * __useUpdateFreeUserQuery__
+ *
+ * To run a query within a React component, call `useUpdateFreeUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useUpdateFreeUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useUpdateFreeUserQuery({
+ *   variables: {
+ *      free: // value for 'free'
+ *      updateFreeUserId: // value for 'updateFreeUserId'
+ *   },
+ * });
+ */
+export function useUpdateFreeUserQuery(baseOptions: Apollo.QueryHookOptions<UpdateFreeUserQuery, UpdateFreeUserQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<UpdateFreeUserQuery, UpdateFreeUserQueryVariables>(UpdateFreeUserDocument, options);
+      }
+export function useUpdateFreeUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<UpdateFreeUserQuery, UpdateFreeUserQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<UpdateFreeUserQuery, UpdateFreeUserQueryVariables>(UpdateFreeUserDocument, options);
+        }
+export type UpdateFreeUserQueryHookResult = ReturnType<typeof useUpdateFreeUserQuery>;
+export type UpdateFreeUserLazyQueryHookResult = ReturnType<typeof useUpdateFreeUserLazyQuery>;
+export type UpdateFreeUserQueryResult = Apollo.QueryResult<UpdateFreeUserQuery, UpdateFreeUserQueryVariables>;

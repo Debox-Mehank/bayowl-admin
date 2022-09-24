@@ -109,6 +109,7 @@ query GetAllUser {
     name
     email
     number
+    free
     services {
       _id
       statusType
@@ -328,4 +329,25 @@ query ResetPassword($password: String!, $resetPasswordId: String!) {
 
 query AddRevisionNotesByMaster($note: String!, $serviceId: String!) {
   addRevisionNotesByMaster(note: $note, serviceId: $serviceId)
+}
+
+query GetAllPaymentConfig {
+  getAllPaymentConfig {
+    _id
+    type
+    value
+    active
+    lastUpdatedBy {
+      name
+    }
+    updatedAt
+  }
+}
+
+query UpdatePaymentConfig($gst: Boolean!) {
+  updatePaymentConfig(gst: $gst)
+}
+
+query UpdateFreeUser($free: Boolean!, $updateFreeUserId: String!) {
+  updateFreeUser(free: $free, id: $updateFreeUserId)
 }
