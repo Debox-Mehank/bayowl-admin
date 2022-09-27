@@ -46,7 +46,7 @@ export default function UAM() {
   useEffect(() => {
     const fetchServices = async () => {
       setLoading(true);
-      const response = await getAllUser();
+      const response = await getAllUser({ fetchPolicy: "network-only" });
       console.log(response.error?.message);
       if (response.data?.getAllUser) {
         console.log(response.data?.getAllUser);

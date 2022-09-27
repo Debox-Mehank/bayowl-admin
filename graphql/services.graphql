@@ -7,6 +7,9 @@ fragment services on UserServices {
   subService2
   estimatedTime
   price
+  description
+  maxFileDuration
+  numberOfReferenceFileUploads
   mixVocalTuningBasic
   mixVocalTuningAdvanced
   mixProcessingReverbs
@@ -61,11 +64,13 @@ fragment services on UserServices {
   masterProjectApprovalTime
   completionDate
   addOnExportsBusStems
-  addOnExportsFile
   addOnExportsMultitrack
   addOnExtraRevision
   paidAt
-  wrokingFile
+  workingFile
+  completedFor
+  multitrackFile
+  stemsFiles
 }
 
 query GetAllService {
@@ -241,6 +246,13 @@ query Dashboard {
   }
 }
 
+query DashboardEmployee {
+  dashboardMetEmployee {
+    label
+    data
+  }
+}
+
 query GetS3SignedURL($fileName: String!) {
   getS3SignedURL(fileName: $fileName)
 }
@@ -324,7 +336,7 @@ query GetContentUploadUrl($fileName: String!) {
 }
 
 query ResetPassword($password: String!, $resetPasswordId: String!) {
-  resetPassword(password: $password, id: $resetPasswordId)
+  resetPasswordAdmin(password: $password, id: $resetPasswordId)
 }
 
 query AddRevisionNotesByMaster($note: String!, $serviceId: String!) {
@@ -350,4 +362,27 @@ query UpdatePaymentConfig($gst: Boolean!) {
 
 query UpdateFreeUser($free: Boolean!, $updateFreeUserId: String!) {
   updateFreeUser(free: $free, id: $updateFreeUserId)
+}
+
+query ToggleDashboardContent($toggleDashboardContentId: String!) {
+  toggleDashboardContent(id: $toggleDashboardContentId)
+}
+
+query DeleteDashboardContent(
+  $image: String!
+  $deleteDashboardContentId: String!
+) {
+  deleteDashboardContent(image: $image, id: $deleteDashboardContentId)
+}
+
+query UploadWorkingFiles($fileUrl: String!, $serviceId: String!) {
+  uploadWorkingFiles(fileUrl: $fileUrl, serviceId: $serviceId)
+}
+
+query UploadBusFiles($fileUrl: String!, $serviceId: String!) {
+  uploadBusFiles(fileUrl: $fileUrl, serviceId: $serviceId)
+}
+
+query UploadMultitrackFiles($fileUrl: String!, $serviceId: String!) {
+  uploadMultitrackFiles(fileUrl: $fileUrl, serviceId: $serviceId)
 }

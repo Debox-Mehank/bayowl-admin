@@ -24,6 +24,7 @@ import Dashboard from "../dashboard/dashboard";
 import { LoadingButton } from "@mui/lab";
 import { useLogoutLazyQuery } from "../../generated/graphql";
 import { Avatar } from "@mui/material";
+import DashboardEmployee from "../dashboard/dashboardE";
 const drawerWidth: number = 240;
 
 interface AppBarProps extends MuiAppBarProps {
@@ -36,6 +37,7 @@ const sideMenuItemManager: ListOfService[] = [
 ];
 
 const sideMenuItemEmployee: ListOfService[] = [
+  ListOfService.DashboardE,
   ListOfService.ServiceTrackingEmployee,
 ];
 
@@ -129,6 +131,8 @@ function Layout({ typeRole }: { typeRole: string }) {
         return <DashboardContentPage />;
       case ListOfService.Dashboard:
         return <Dashboard />;
+      case ListOfService.DashboardE:
+        return <DashboardEmployee />;
     }
   }
 
@@ -271,9 +275,7 @@ function Layout({ typeRole }: { typeRole: string }) {
         component="main"
         sx={{
           backgroundColor: (theme) =>
-            theme.palette.mode === "light"
-              ? theme.palette.grey[100]
-              : theme.palette.grey[900],
+            theme.palette.mode === "light" ? "#0B0B1D" : "#0B0B1D",
           flexGrow: 1,
           height: "100vh",
           overflow: "auto",

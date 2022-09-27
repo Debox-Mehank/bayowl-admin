@@ -5,6 +5,7 @@ import {
   MenuItem,
   Modal,
   Select,
+  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -28,14 +29,15 @@ import {
 } from "../../generated/graphql";
 import { LoadingButton } from "@mui/lab";
 import generate from "generate-password-ts";
+import moment from "moment";
 interface AdminInterface {
   name: string;
   email: string;
   id: string;
   type: string;
   createdBy: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function TAM() {
@@ -69,7 +71,7 @@ export default function TAM() {
   useEffect(() => {
     const fetchServices = async () => {
       setLoading(true);
-      const response = await getAllAdmin();
+      const response = await getAllAdmin({ fetchPolicy: "network-only" });
       if (response.data?.allAdmins) {
         setData(
           response.data?.allAdmins.map((ind) => ({
@@ -77,8 +79,12 @@ export default function TAM() {
             email: ind.email!,
             type: ind.type!,
             createdBy: ind.createdBy!.name!,
-            createdAt: ind.createdAt!,
-            updatedAt: ind.updatedAt!,
+            createdAt: ind.createdAt
+              ? moment(ind.createdAt).format("MMM Do YY, hh:mm a")
+              : moment().format("MMM Do YY, hh:mm a"),
+            updatedAt: ind.updatedAt
+              ? moment(ind.updatedAt).format("MMM Do YY, hh:mm a")
+              : moment().format("MMM Do YY, hh:mm a"),
             id: ind._id!,
           })) ?? []
         );
@@ -139,10 +145,12 @@ export default function TAM() {
           createdBy: localStorage.getItem("admin")
             ? JSON.parse(localStorage.getItem("admin")!)?.name ?? ""
             : "",
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: moment().format("MMM Do YY, hh:mm a"),
+          updatedAt: moment().format("MMM Do YY, hh:mm a"),
         });
         setData(prev);
+        setShowSnack(true);
+        setSnackMessage("Password updated successfully");
       }
       onClose();
     }
@@ -154,12 +162,12 @@ export default function TAM() {
     setReset(true);
   };
   const [columns, setColumns] = useState<GridColDef[]>([
-    { field: "name", headerName: "Name", width: 150 },
-    { field: "email", headerName: "Email", width: 150 },
-    { field: "type", headerName: "type", width: 150 },
-    { field: "createdBy", headerName: "Created By", width: 150 },
-    { field: "createdAt", headerName: "Created At", width: 150 },
-    { field: "updatedAt", headerName: "Updated At", width: 150 },
+    { field: "name", headerName: "Name", width: 180 },
+    { field: "email", headerName: "Email", width: 180 },
+    { field: "type", headerName: "type", width: 180 },
+    { field: "createdBy", headerName: "Created By", width: 180 },
+    { field: "createdAt", headerName: "Created At", width: 180 },
+    { field: "updatedAt", headerName: "Updated At", width: 180 },
     {
       field: "resetPassword",
       headerName: "Reset Password",
@@ -188,6 +196,8 @@ export default function TAM() {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingButton, setLoadingButton] = useState<boolean>(false);
+  const [showSnack, setShowSnack] = useState<boolean>(false);
+  const [snackMessage, setSnackMessage] = useState<string>("");
   const onClose = () => {
     setOpen(false);
     setName("");
@@ -275,10 +285,11 @@ export default function TAM() {
             <TextField
               variant="outlined"
               id="component-outlined"
+              onChange={(e) => setPassword(e.target.value)}
               value={password}
-              InputProps={{
-                readOnly: true,
-              }}
+              // InputProps={{
+              //   readOnly: true,
+              // }}
               fullWidth
               label="Password"
             />
@@ -292,6 +303,14 @@ export default function TAM() {
           </Stack>
         </Box>
       </Modal>
+
+      <Snackbar
+        open={showSnack}
+        autoHideDuration={4000}
+        onClose={() => setShowSnack(false)}
+        message={snackMessage}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      />
     </>
   );
 }

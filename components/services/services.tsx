@@ -15,7 +15,7 @@ import {
 } from "../../generated/graphql";
 import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
 import { parse, ParseResult, ParseStepResult } from "papaparse";
-import { durationSeconds } from "../../utility/helpers";
+import { durationSeconds, secondsToTime } from "../../utility/helpers";
 
 const columns: GridColDef[] = [
   { field: "mainCategory", headerName: "Main Category", width: 150 },
@@ -41,7 +41,7 @@ const columns: GridColDef[] = [
   {
     field: "maxDuration",
     headerName: "File(s) Duration Limit",
-    width: 150,
+    width: 180,
   },
   {
     field: "numberOfReferenceFileUploads",
@@ -145,6 +145,7 @@ export default function Service() {
         response.data?.getAllService.map((ind) => ({
           ...ind,
           id: ind._id,
+          maxDuration: secondsToTime(ind.maxFileDuration ?? 0),
         })) ?? [];
 
       const servicesData = servicesDataRaw.map((el) => {

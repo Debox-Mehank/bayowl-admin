@@ -55,6 +55,8 @@ export default function Payments() {
             response.data?.getAllPayment.map((ind) => ({
               ...ind,
               id: ind._id,
+              createdAt: moment(ind.createdAt).format("MMM Do YY, hh:mm a"),
+              updatedAt: moment(ind.updatedAt).format("MMM Do YY, hh:mm a"),
             })) ?? []
           );
         }

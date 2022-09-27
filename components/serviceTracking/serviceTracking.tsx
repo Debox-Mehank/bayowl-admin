@@ -2,6 +2,11 @@ import { LoadingButton } from "@mui/lab";
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   LinearProgress,
   MenuItem,
   Modal,
@@ -15,6 +20,7 @@ import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
 import React from "react";
 import { useEffect, useState } from "react";
 import {
+  AddOn,
   Admin,
   useAddRevisionNotesByMasterLazyQuery,
   useAllEmployeeLazyQuery,
@@ -25,6 +31,8 @@ import {
   UserServiceStatus,
 } from "../../generated/graphql";
 import moment from "moment";
+import { secondsToTime } from "../../utility/helpers";
+import { ColorButton } from "../Button";
 
 const style = {
   position: "absolute",
@@ -64,10 +72,13 @@ export default function ServiceTracking() {
     setData(
       arr.map((el) => ({
         ...el,
+        masterProjectApprovalTimeMoment: moment().format("MMM Do YY, hh:mm a"),
         statusType:
           el._id === serviceId ? UserServiceStatus.Delivered : el.statusType,
       }))
     );
+    setConfimationDialog(false);
+    setSelectedService(undefined);
   };
   const columns: GridColDef[] = [
     { field: "projectName", headerName: "Project Name", width: 150 },
@@ -82,7 +93,7 @@ export default function ServiceTracking() {
       width: 150,
       renderCell: (cellValues) => {
         return (
-          <Button
+          <ColorButton
             disabled={
               cellValues.row.statusType === UserServiceStatus.Underreview
                 ? false
@@ -92,7 +103,7 @@ export default function ServiceTracking() {
             onClick={() => assignService(cellValues)}
           >
             {cellValues.row.allotedTo ? "Re-Assign" : "Assign"}
-          </Button>
+          </ColorButton>
         );
       },
     },
@@ -102,7 +113,7 @@ export default function ServiceTracking() {
       width: 150,
       renderCell: (cellValues) => {
         return (
-          <Button
+          <ColorButton
             onClick={() => {
               const downloadA = document.createElement("a");
               downloadA.href = String(cellValues.row.deliveredFiles[0]);
@@ -120,7 +131,31 @@ export default function ServiceTracking() {
             variant="contained"
           >
             Download
-          </Button>
+          </ColorButton>
+        );
+      },
+    },
+    {
+      field: "Working Files",
+      headerName: "Working Files",
+      width: 150,
+      renderCell: (cellValues) => {
+        return (
+          <ColorButton
+            onClick={() => {
+              const downloadA = document.createElement("a");
+              downloadA.href = String(cellValues.row.workingFile);
+              downloadA.download = "true";
+              downloadA.click();
+            }}
+            disabled={
+              cellValues.row.statusType !== UserServiceStatus.Completed &&
+              !cellValues.row.workingFile
+            }
+            variant="contained"
+          >
+            Download
+          </ColorButton>
         );
       },
     },
@@ -130,19 +165,22 @@ export default function ServiceTracking() {
       width: 150,
       renderCell: (cellValues) => {
         return (
-          <LoadingButton
+          <ColorButton
             disabled={
               cellValues.row.statusType ===
               UserServiceStatus.Underreviewinternal
                 ? false
                 : true
             }
-            onClick={() => approveProject(cellValues.row.id)}
+            onClick={() => {
+              setConfimationDialog(true);
+              setSelectedService(cellValues.row);
+            }}
             variant="contained"
-            loading={approveLoading === cellValues.row.id ? true : false}
+            // loading={approveLoading === cellValues.row.id ? true : false}
           >
             Approve
-          </LoadingButton>
+          </ColorButton>
         );
       },
     },
@@ -152,7 +190,7 @@ export default function ServiceTracking() {
       width: 150,
       renderCell: (cellValues) => {
         return (
-          <Button
+          <ColorButton
             disabled={
               cellValues.row.statusType ===
               UserServiceStatus.Underreviewinternal
@@ -166,11 +204,16 @@ export default function ServiceTracking() {
             }}
           >
             Reject
-          </Button>
+          </ColorButton>
         );
       },
     },
     { field: "statusType", headerName: "Final Project Status", width: 200 },
+    {
+      field: "customerNotes",
+      headerName: "Customer Notes",
+      width: 200,
+    },
     {
       field: "numberOfRevisionsByMaster",
       headerName: "Number Of Internal Revisions",
@@ -206,6 +249,11 @@ export default function ServiceTracking() {
       headerName: "Customer Approval Time",
       width: 200,
     },
+    {
+      field: "completedForString",
+      headerName: "Completed For",
+      width: 200,
+    },
     { field: "paid", headerName: "Paid", width: 150 },
     { field: "allotedTo", headerName: "Assigned To", width: 150 },
     { field: "allotedBy", headerName: "Assigned By", width: 150 },
@@ -215,7 +263,6 @@ export default function ServiceTracking() {
     { field: "serviceName", headerName: "Service Name", width: 150 },
     { field: "subService", headerName: "Sub Service", width: 150 },
     { field: "subService2", headerName: "Sub Service 2", width: 150 },
-    { field: "for", headerName: "For", width: 150 },
     { field: "description", headerName: "Description", width: 150 },
     {
       field: "estimatedTime",
@@ -268,18 +315,28 @@ export default function ServiceTracking() {
       width: 150,
     },
     {
-      field: "Add on: Extra Revision",
-      headerName: "Add on: Extra Revision",
+      field: "Extra Revision",
+      headerName: "Extra Revision",
       width: 150,
     },
     {
-      field: "Add on: 10 Tracks (Adds 1 day to delivery per add on)",
-      headerName: "Add on: 10 Tracks (Adds 1 day to delivery per add on)",
+      field: "Add on: 10 Tracks",
+      headerName: "Add on: 10 Tracks",
       width: 150,
     },
     {
-      field: "Add on: 30s Duration (Adds 1 day to delivery per add on)",
-      headerName: "Add on: 30s Duration (Adds 1 day to delivery per add on)",
+      field: "Add on: 30s Duration",
+      headerName: "Add on: 30s Duration",
+      width: 150,
+    },
+    {
+      field: "Additional Exports: Bus Stems",
+      headerName: "Additional Exports: Bus Stems",
+      width: 150,
+    },
+    {
+      field: "Additional Exports: Multitracks",
+      headerName: "Additional Exports: Multitracks",
       width: 150,
     },
   ];
@@ -346,34 +403,51 @@ export default function ServiceTracking() {
       });
 
       if (response.data?.getAllServiceForMaster) {
-        const finalData = response.data?.getAllServiceForMaster.map((ind) => ({
-          ...ind,
-          id: ind._id,
-          paidAtMoment: moment(ind.paidAt).format("MMM Do YY, hh:mm"),
-          allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
-          allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",
-          revisionNotesByMaster: ind.revisionNotesByMaster ?? "",
-          revisionNotesByUser:
-            ind.revisionFiles.length !== 0
-              ? ind.revisionFiles[ind.revisionFiles.length - 1].description
+        const finalData = response.data?.getAllServiceForMaster.map((ind) => {
+          let sObj = {
+            ...ind,
+            id: ind._id,
+            paidAtMoment: moment(ind.paidAt).format("MMM Do YY, hh:mm"),
+            allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
+            allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",
+            customerNotes: ind.notes ?? "",
+            revisionNotesByMaster: ind.revisionNotesByMaster ?? "",
+            completionDate: ind.completionDate
+              ? moment(ind.completionDate).format("MMM Do YY, hh:mm")
               : "",
-          customerRejectionTime:
-            ind.revisionFiles.length !== 0
-              ? moment(
-                  ind.revisionFiles[ind.revisionFiles.length - 1].revisionTime
-                ).format("MMM Do YY, hh:mm")
+            revisionNotesByUser:
+              ind.revisionFiles.length !== 0
+                ? ind.revisionFiles[ind.revisionFiles.length - 1].description
+                : "",
+            customerRejectionTime:
+              ind.revisionFiles.length !== 0
+                ? moment(
+                    ind.revisionFiles[ind.revisionFiles.length - 1].revisionTime
+                  ).format("MMM Do YY, hh:mm")
+                : "",
+            assignedTime: ind.assignedTime
+              ? moment(ind.assignedTime).format("MMM Do YY, hh:mm")
               : "",
-          assignedTime: ind.assignedTime
-            ? moment(ind.assignedTime).format("MMM Do YY, hh:mm")
-            : "",
-          revisionTimeByMasterMoment: ind.revisionTimeByMaster
-            ? moment(ind.revisionTimeByMaster).format("MMM Do YY, hh:mm")
-            : "",
-          masterProjectApprovalTimeMoment: ind.masterProjectApprovalTime
-            ? moment(ind.masterProjectApprovalTime).format("MMM Do YY, hh:mm")
-            : "",
-        }));
-        console.log(finalData);
+            revisionTimeByMasterMoment: ind.revisionTimeByMaster
+              ? moment(ind.revisionTimeByMaster).format("MMM Do YY, hh:mm")
+              : "",
+            masterProjectApprovalTimeMoment: ind.masterProjectApprovalTime
+              ? moment(ind.masterProjectApprovalTime).format("MMM Do YY, hh:mm")
+              : "",
+            completedForString: ind.completionDate
+              ? ind.completedFor === 0
+                ? "Original Upload"
+                : `Revision - ${ind.completedFor}`
+              : "",
+            maxDuration: secondsToTime(ind.maxFileDuration ?? 0),
+          };
+          ind.addOn.map((elem) => {
+            (sObj as any)[elem.type] = elem.value
+              ? `₹${elem.value.toLocaleString("en-IN")} x ${elem.qty}`
+              : "N/A";
+          });
+          return sObj;
+        });
         setData(finalData ?? []);
       }
       const allEmps = await getAllEmployees();
@@ -420,6 +494,10 @@ export default function ServiceTracking() {
       onCloseForReject();
     }
   };
+
+  const [confimationDialog, setConfimationDialog] = useState<boolean>(false);
+  const [selectedService, setSelectedService] = useState<UserServices>();
+
   // const [servicesData, setServicesData] = useState<Services[]>([]);
   return (
     <>
@@ -503,6 +581,44 @@ export default function ServiceTracking() {
           </Stack>
         </Box>
       </Modal>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confimationDialog}
+        onClose={() => setConfimationDialog(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Are you sure?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Once you approve customer will be able to download the files for
+            this project.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setConfimationDialog(false);
+              setSelectedService(undefined);
+            }}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              if (selectedService) {
+                approveProject(selectedService._id);
+              }
+            }}
+            autoFocus
+            disabled={loading}
+          >
+            Continue
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

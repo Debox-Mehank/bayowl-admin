@@ -2,8 +2,8 @@ import { Grid } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
   DashboardInterfaceClass,
-  useDashboardLazyQuery,
   DashboardEnum,
+  useDashboardEmployeeLazyQuery,
 } from "../../generated/graphql";
 
 const GridItem = ({ title, value }: { title: string; value: number }) => {
@@ -24,34 +24,22 @@ const GridItem = ({ title, value }: { title: string; value: number }) => {
   );
 };
 
-export const Dashboard = () => {
+export const DashboardEmployee = () => {
   const [data, setData] = useState<DashboardInterfaceClass[]>([]);
-  const [getDashboard] = useDashboardLazyQuery();
+  const [getDashboard] = useDashboardEmployeeLazyQuery();
   const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
     const getData = async () => {
       setLoading(true);
       const response = await getDashboard({ fetchPolicy: "network-only" });
       setLoading(false);
-      if (response.data) setData(response.data!.dashboardMet);
+      if (response.data) setData(response.data!.dashboardMetEmployee);
     };
     getData();
   }, []);
 
   const getValueFor = (f: DashboardEnum): number => {
     switch (f) {
-      case DashboardEnum.NumberOfCustomersRegistered:
-        return (
-          data.find(
-            (el) => el.label === DashboardEnum.NumberOfCustomersRegistered
-          )?.data ?? 0
-        );
-      case DashboardEnum.NumberOfCustomersWithPaidService:
-        return (
-          data.find(
-            (el) => el.label === DashboardEnum.NumberOfCustomersWithPaidService
-          )?.data ?? 0
-        );
       case DashboardEnum.NumberOfServicesCompleted:
         return (
           data.find(
@@ -77,10 +65,6 @@ export const Dashboard = () => {
 
   const getTitleFor = (f: DashboardEnum): string => {
     switch (f) {
-      case DashboardEnum.NumberOfCustomersRegistered:
-        return "Cutomers Registered";
-      case DashboardEnum.NumberOfCustomersWithPaidService:
-        return "Paid Customers";
       case DashboardEnum.NumberOfServicesCompleted:
         return "Services Completed";
       case DashboardEnum.NumberOfServicesInProgress:
@@ -94,18 +78,6 @@ export const Dashboard = () => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={6}>
-        <GridItem
-          title={getTitleFor(DashboardEnum.NumberOfCustomersRegistered)}
-          value={getValueFor(DashboardEnum.NumberOfCustomersRegistered)}
-        />
-      </Grid>
-      <Grid item xs={6}>
-        <GridItem
-          title={getTitleFor(DashboardEnum.NumberOfCustomersWithPaidService)}
-          value={getValueFor(DashboardEnum.NumberOfCustomersWithPaidService)}
-        />
-      </Grid>
       <Grid item xs={4}>
         <GridItem
           title={getTitleFor(DashboardEnum.NumberOfServicesCompleted)}
@@ -128,4 +100,4 @@ export const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default DashboardEmployee;

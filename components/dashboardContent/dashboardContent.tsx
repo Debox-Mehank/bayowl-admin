@@ -1,6 +1,12 @@
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
   LinearProgress,
   MenuItem,
   Modal,
@@ -29,10 +35,14 @@ import {
   useAddAdminMutation,
   useAddDashboardContentLazyQuery,
   useAllDashboardContentLazyQuery,
+  useDeleteDashboardContentLazyQuery,
   useGetContentUploadUrlLazyQuery,
+  useToggleDashboardContentLazyQuery,
 } from "../../generated/graphql";
 import { LoadingButton } from "@mui/lab";
+import DeleteIcon from "@mui/icons-material/Delete";
 import moment from "moment";
+import { ColorButton } from "../Button";
 
 export default function DashboardContentPage() {
   const style = {
@@ -45,6 +55,8 @@ export default function DashboardContentPage() {
     boxShadow: 24,
     p: 4,
   };
+  const [deleteContentQuery] = useDeleteDashboardContentLazyQuery();
+  const [toggleContentQuery] = useToggleDashboardContentLazyQuery();
   const [getAllContent] = useAllDashboardContentLazyQuery();
   const [getContentUploadUrlQuery] = useGetContentUploadUrlLazyQuery();
   const [data, setData] = useState<DashboardContent[]>([]);
@@ -52,7 +64,7 @@ export default function DashboardContentPage() {
   useEffect(() => {
     const fetchServices = async () => {
       setLoading(true);
-      const response = await getAllContent();
+      const response = await getAllContent({ fetchPolicy: "network-only" });
       if (response.data?.allDashboardContent) {
         setData(
           response.data?.allDashboardContent.map((ind) => ({
@@ -86,7 +98,29 @@ export default function DashboardContentPage() {
           <Switch
             checked={cellValues.row.active}
             inputProps={{ "aria-label": "controlled" }}
+            onChange={(e) => {
+              setSelectedContent(cellValues.row);
+              setConfimationDialog(true);
+            }}
           />
+        );
+      },
+    },
+    {
+      field: "delete",
+      headerName: "Delete",
+      width: 100,
+      renderCell: (cellValues: GridCellParams<DashboardContent>) => {
+        return (
+          <IconButton
+            aria-label="delete"
+            onClick={() => {
+              setSelectedContent(cellValues.row);
+              setConfimationDialogDelete(true);
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
         );
       },
     },
@@ -171,12 +205,12 @@ export default function DashboardContentPage() {
       },
       body: file,
     });
-    const imageUrl = s3Url.getContentUploadUrl.split("?")[0];
+    // const imageUrl = s3Url.getContentUploadUrl.split("?")[0];
 
     const response = await addDashboardContent({
       variables: {
         input: {
-          image: imageUrl,
+          image: finalFileName,
         },
       },
     });
@@ -190,13 +224,109 @@ export default function DashboardContentPage() {
     const newObj = {
       ...respObj,
       id: respObj._id,
+      image: `${process.env.NEXT_PUBLIC_AWS_CLOUDFRONT}/${respObj.image}`,
       lastUpdatedByName: respObj.lastUpdatedBy.name,
       createdByName: respObj.createdBy.name,
+      createdAt: moment().format("MMM Do YY, hh:mm a"),
+      // updatedAt: moment().format("MMM Do YY, hh:mm a"),
     };
     setData([...data, newObj]);
     onClose();
   };
-  // const [servicesData, setServicesData] = useState<Services[]>([]);
+
+  const [confimationDialog, setConfimationDialog] = useState<boolean>(false);
+  const [confimationDialogDelete, setConfimationDialogDelete] =
+    useState<boolean>(false);
+  const [selectedContent, setSelectedContent] = useState<DashboardContent>();
+
+  const handleConfirm = async () => {
+    if (!selectedContent) {
+      setConfimationDialog(false);
+      setShowSnack(true);
+      setSnackMessage("Something went wrong, try again later.");
+      return;
+    }
+
+    setLoading(true);
+
+    const { data: contentData, error } = await toggleContentQuery({
+      variables: { toggleDashboardContentId: selectedContent._id },
+      fetchPolicy: "network-only",
+    });
+
+    // Handling Errors
+    if (error) {
+      setLoading(false);
+      setSnackMessage(error.message.toString());
+      setShowSnack(true);
+      return;
+    }
+    if (!contentData || !contentData.toggleDashboardContent) {
+      setLoading(false);
+      setSnackMessage("Something went wrong, try again later.");
+      setShowSnack(true);
+      return;
+    }
+
+    const oldArr = [...data];
+    const findElemIdx = oldArr.findIndex(
+      (el) => el._id === selectedContent._id
+    );
+    if (findElemIdx >= 0) {
+      oldArr[findElemIdx].active = !oldArr[findElemIdx].active;
+    }
+
+    setData(oldArr);
+    setSelectedContent(undefined);
+    setConfimationDialog(false);
+    setShowSnack(true);
+    setSnackMessage("Data updated successfully");
+    setLoading(false);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedContent) {
+      setConfimationDialogDelete(false);
+      setShowSnack(true);
+      setSnackMessage("Something went wrong, try again later.");
+      return;
+    }
+
+    setLoading(true);
+
+    const { data: contentData, error } = await deleteContentQuery({
+      variables: {
+        deleteDashboardContentId: selectedContent._id,
+        image: new URL(selectedContent.image).pathname.toString(),
+      },
+      fetchPolicy: "network-only",
+    });
+
+    // Handling Errors
+    if (error) {
+      setLoading(false);
+      setSnackMessage(error.message.toString());
+      setShowSnack(true);
+      return;
+    }
+    if (!contentData || !contentData.deleteDashboardContent) {
+      setLoading(false);
+      setSnackMessage("Something went wrong, try again later.");
+      setShowSnack(true);
+      return;
+    }
+
+    const oldArr = [...data];
+    const newArr = oldArr.filter((el) => el._id !== selectedContent._id);
+
+    setData(newArr);
+    setSelectedContent(undefined);
+    setConfimationDialogDelete(false);
+    setShowSnack(true);
+    setSnackMessage("Data deleted successfully");
+    setLoading(false);
+  };
+
   return (
     <>
       <DataGrid
@@ -256,6 +386,68 @@ export default function DashboardContentPage() {
           </Stack>
         </Box>
       </Modal>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confimationDialog}
+        onClose={() => setConfimationDialog(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Are you sure?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {`Once you ${
+              selectedContent?.active ? "disable" : "enable"
+            } it, it will ${
+              selectedContent?.active ? "not be visible" : "be visible"
+            } on the dashboard`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setConfimationDialog(false);
+              setSelectedContent(undefined);
+            }}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleConfirm} autoFocus disabled={loading}>
+            Continue
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={confimationDialogDelete}
+        onClose={() => setConfimationDialogDelete(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Are you sure?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {`Are you sure you want to delete this dashboard content?`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setConfimationDialogDelete(false);
+              setSelectedContent(undefined);
+            }}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} autoFocus disabled={loading}>
+            Continue
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={showSnack}
         autoHideDuration={4000}
