@@ -1497,8 +1497,8 @@ export default function ServiceTrackingEmployee() {
         <DialogTitle id="alert-dialog-title">{"Are you sure?"}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Once you confirm customer will be able to see the project is work in
-            progress and the estimated delivery time from now.
+            Once you confirm the project status will change to work in progress
+            and the estimated delivery date will be updated.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
