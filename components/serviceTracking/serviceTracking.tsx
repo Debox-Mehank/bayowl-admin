@@ -254,6 +254,11 @@ export default function ServiceTracking() {
       headerName: "Completed For",
       width: 200,
     },
+    {
+      field: "customerReuploadCount",
+      headerName: "Customer Reupload Count",
+      width: 200,
+    },
     { field: "paid", headerName: "Paid", width: 150 },
     { field: "allotedTo", headerName: "Assigned To", width: 150 },
     { field: "allotedBy", headerName: "Assigned By", width: 150 },
@@ -412,6 +417,7 @@ export default function ServiceTracking() {
             allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",
             customerNotes: ind.notes ?? "",
             revisionNotesByMaster: ind.revisionNotesByMaster ?? "",
+            customerReuploadCount: ind.requestReuploadCounter ?? 0,
             completionDate: ind.completionDate
               ? moment(ind.completionDate).format("MMM Do YY, hh:mm")
               : "",

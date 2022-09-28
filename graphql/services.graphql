@@ -71,6 +71,7 @@ fragment services on UserServices {
   completedFor
   multitrackFile
   stemsFiles
+  requestReuploadCounter
 }
 
 query GetAllService {

@@ -408,8 +408,8 @@ export default function ServiceTrackingEmployee() {
                 setOpenUploadMultitrack(true);
               }}
               disabled={
-                (cellValues.row.statusType !== UserServiceStatus.Completed &&
-                  !cellValues.row.addOnExportsMultitrack) ||
+                cellValues.row.statusType !== UserServiceStatus.Completed ||
+                !cellValues.row.addOnExportsMultitrack ||
                 cellValues.row.multitrackFile
               }
             >
@@ -433,8 +433,8 @@ export default function ServiceTrackingEmployee() {
                 setOpenUploadBus(true);
               }}
               disabled={
-                (cellValues.row.statusType !== UserServiceStatus.Completed &&
-                  !cellValues.row.addOnExportsBusStems) ||
+                cellValues.row.statusType !== UserServiceStatus.Completed ||
+                !cellValues.row.addOnExportsBusStems ||
                 cellValues.row.stemsFiles
               }
             >
@@ -496,6 +496,11 @@ export default function ServiceTrackingEmployee() {
     {
       field: "completedForString",
       headerName: "Completed For",
+      width: 200,
+    },
+    {
+      field: "customerReuploadCount",
+      headerName: "Customer Reupload Count",
       width: 200,
     },
     { field: "paid", headerName: "Paid", width: 150 },
@@ -1212,6 +1217,7 @@ export default function ServiceTrackingEmployee() {
               ...ind,
               id: ind._id,
               customerNotes: ind.notes ?? "",
+              customerReuploadCount: ind.requestReuploadCounter ?? 0,
               revisionTimeByMaster: ind.revisionTimeByMaster
                 ? moment(ind.revisionTimeByMaster).format("MMM Do YY, hh:mm a")
                 : "",
