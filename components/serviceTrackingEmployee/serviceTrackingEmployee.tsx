@@ -1263,8 +1263,8 @@ export default function ServiceTrackingEmployee() {
               ...ind,
               id: ind._id,
               deliveryDaysRemaining: ind.estDeliveryDate
-                ? moment().diff(moment(ind.estDeliveryDate), "days") > 0
-                  ? moment().diff(moment(ind.estDeliveryDate), "days")
+                ? moment(ind.estDeliveryDate).diff(moment(), "days") > 0
+                  ? moment(ind.estDeliveryDate).diff(moment(), "days") + " Days"
                   : [
                       UserServiceStatus.Completed,
                       UserServiceStatus.Delivered,

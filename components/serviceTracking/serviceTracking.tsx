@@ -533,9 +533,14 @@ export default function ServiceTracking() {
             ...ind,
             id: ind._id,
             deliveryDaysRemaining: ind.estDeliveryDate
-              ? moment().diff(moment(ind.estDeliveryDate), "days") > 0
-                ? moment().diff(moment(ind.estDeliveryDate), "days")
-                : "Delivered"
+              ? moment(ind.estDeliveryDate).diff(moment(), "days") > 0
+                ? moment(ind.estDeliveryDate).diff(moment(), "days") + " Days"
+                : [
+                    UserServiceStatus.Completed,
+                    UserServiceStatus.Delivered,
+                  ].includes(ind.statusType)
+                ? "Delivered"
+                : "Past Delivery Date"
               : "",
             paidAtMoment: moment(ind.paidAt).format("MMM Do YY, hh:mm"),
             allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
