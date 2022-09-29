@@ -109,14 +109,19 @@ export default function ServiceTracking() {
     },
     {
       field: "Download",
-      headerName: "Download",
-      width: 150,
+      headerName: "Engineer Delivery Files",
+      width: 180,
       renderCell: (cellValues) => {
         return (
           <ColorButton
             onClick={() => {
               const downloadA = document.createElement("a");
-              downloadA.href = String(cellValues.row.deliveredFiles[0]);
+              downloadA.href =
+                cellValues.row.revisionFiles.length > 0
+                  ? cellValues.row.revisionFiles[
+                      cellValues.row.revisionFiles.length - 1
+                    ].file
+                  : String(cellValues.row.deliveredFiles[0]);
               downloadA.download = "true";
               downloadA.click();
             }}
@@ -137,8 +142,8 @@ export default function ServiceTracking() {
     },
     {
       field: "Working Files",
-      headerName: "Working Files",
-      width: 150,
+      headerName: "Engineer Working Files",
+      width: 180,
       renderCell: (cellValues) => {
         return (
           <ColorButton
@@ -152,6 +157,27 @@ export default function ServiceTracking() {
               cellValues.row.statusType !== UserServiceStatus.Completed &&
               !cellValues.row.workingFile
             }
+            variant="contained"
+          >
+            Download
+          </ColorButton>
+        );
+      },
+    },
+    {
+      field: "originalCustomerFiles",
+      headerName: "Customer Files",
+      width: 150,
+      renderCell: (cellValues) => {
+        return (
+          <ColorButton
+            onClick={() => {
+              const downloadA = document.createElement("a");
+              downloadA.href = String(cellValues.row.uploadedFiles[0]);
+              downloadA.download = "true";
+              downloadA.click();
+            }}
+            disabled={cellValues.row.uploadedFiles.length <= 0}
             variant="contained"
           >
             Download

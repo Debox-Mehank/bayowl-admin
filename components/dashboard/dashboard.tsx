@@ -52,6 +52,11 @@ export const Dashboard = () => {
             (el) => el.label === DashboardEnum.NumberOfCustomersWithPaidService
           )?.data ?? 0
         );
+      case DashboardEnum.NumberOfPaidService:
+        return (
+          data.find((el) => el.label === DashboardEnum.NumberOfPaidService)
+            ?.data ?? 0
+        );
       case DashboardEnum.NumberOfServicesCompleted:
         return (
           data.find(
@@ -70,6 +75,20 @@ export const Dashboard = () => {
             (el) => el.label === DashboardEnum.NumberOfServicesPendingAcceptance
           )?.data ?? 0
         );
+      case DashboardEnum.NumberOfServicesPendingAcceptanceCustomer:
+        return (
+          data.find(
+            (el) =>
+              el.label ===
+              DashboardEnum.NumberOfServicesPendingAcceptanceCustomer
+          )?.data ?? 0
+        );
+      case DashboardEnum.NumberOfServicesForRevision:
+        return (
+          data.find(
+            (el) => el.label === DashboardEnum.NumberOfServicesForRevision
+          )?.data ?? 0
+        );
       default:
         return 0;
     }
@@ -78,15 +97,21 @@ export const Dashboard = () => {
   const getTitleFor = (f: DashboardEnum): string => {
     switch (f) {
       case DashboardEnum.NumberOfCustomersRegistered:
-        return "Cutomers Registered";
+        return "Total Customers Registered";
       case DashboardEnum.NumberOfCustomersWithPaidService:
-        return "Paid Customers";
+        return "Total Paid Cutomers";
+      case DashboardEnum.NumberOfPaidService:
+        return "Total Services Bought";
       case DashboardEnum.NumberOfServicesCompleted:
-        return "Services Completed";
+        return "Total Services Completed";
       case DashboardEnum.NumberOfServicesInProgress:
-        return "Services In Progress";
+        return "Total Services In Progress";
       case DashboardEnum.NumberOfServicesPendingAcceptance:
-        return "Service Pending Acceptance";
+        return "Total Services Pending QA";
+      case DashboardEnum.NumberOfServicesPendingAcceptanceCustomer:
+        return "Total Services Confirmation Pending";
+      case DashboardEnum.NumberOfServicesForRevision:
+        return "Total Services For Revision";
       default:
         return "";
     }
@@ -94,16 +119,22 @@ export const Dashboard = () => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={6}>
+      <Grid item xs={4}>
         <GridItem
           title={getTitleFor(DashboardEnum.NumberOfCustomersRegistered)}
           value={getValueFor(DashboardEnum.NumberOfCustomersRegistered)}
         />
       </Grid>
-      <Grid item xs={6}>
+      <Grid item xs={4}>
         <GridItem
           title={getTitleFor(DashboardEnum.NumberOfCustomersWithPaidService)}
           value={getValueFor(DashboardEnum.NumberOfCustomersWithPaidService)}
+        />
+      </Grid>
+      <Grid item xs={4}>
+        <GridItem
+          title={getTitleFor(DashboardEnum.NumberOfPaidService)}
+          value={getValueFor(DashboardEnum.NumberOfPaidService)}
         />
       </Grid>
       <Grid item xs={4}>
@@ -122,6 +153,22 @@ export const Dashboard = () => {
         <GridItem
           title={getTitleFor(DashboardEnum.NumberOfServicesPendingAcceptance)}
           value={getValueFor(DashboardEnum.NumberOfServicesPendingAcceptance)}
+        />
+      </Grid>
+      <Grid item xs={6}>
+        <GridItem
+          title={getTitleFor(
+            DashboardEnum.NumberOfServicesPendingAcceptanceCustomer
+          )}
+          value={getValueFor(
+            DashboardEnum.NumberOfServicesPendingAcceptanceCustomer
+          )}
+        />
+      </Grid>
+      <Grid item xs={6}>
+        <GridItem
+          title={getTitleFor(DashboardEnum.NumberOfServicesForRevision)}
+          value={getValueFor(DashboardEnum.NumberOfServicesForRevision)}
         />
       </Grid>
     </Grid>

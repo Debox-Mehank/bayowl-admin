@@ -40,11 +40,10 @@ export const DashboardEmployee = () => {
 
   const getValueFor = (f: DashboardEnum): number => {
     switch (f) {
-      case DashboardEnum.NumberOfServicesCompleted:
+      case DashboardEnum.NumberOfServicesAssigned:
         return (
-          data.find(
-            (el) => el.label === DashboardEnum.NumberOfServicesCompleted
-          )?.data ?? 0
+          data.find((el) => el.label === DashboardEnum.NumberOfServicesAssigned)
+            ?.data ?? 0
         );
       case DashboardEnum.NumberOfServicesInProgress:
         return (
@@ -52,10 +51,30 @@ export const DashboardEmployee = () => {
             (el) => el.label === DashboardEnum.NumberOfServicesInProgress
           )?.data ?? 0
         );
+      case DashboardEnum.NumberOfServicesCompleted:
+        return (
+          data.find(
+            (el) => el.label === DashboardEnum.NumberOfServicesCompleted
+          )?.data ?? 0
+        );
       case DashboardEnum.NumberOfServicesPendingAcceptance:
         return (
           data.find(
             (el) => el.label === DashboardEnum.NumberOfServicesPendingAcceptance
+          )?.data ?? 0
+        );
+      case DashboardEnum.NumberOfServicesPendingAcceptanceCustomer:
+        return (
+          data.find(
+            (el) =>
+              el.label ===
+              DashboardEnum.NumberOfServicesPendingAcceptanceCustomer
+          )?.data ?? 0
+        );
+      case DashboardEnum.NumberOfServicesForRevision:
+        return (
+          data.find(
+            (el) => el.label === DashboardEnum.NumberOfServicesForRevision
           )?.data ?? 0
         );
       default:
@@ -65,12 +84,18 @@ export const DashboardEmployee = () => {
 
   const getTitleFor = (f: DashboardEnum): string => {
     switch (f) {
-      case DashboardEnum.NumberOfServicesCompleted:
-        return "Services Completed";
+      case DashboardEnum.NumberOfServicesAssigned:
+        return "Total Services Assigned";
       case DashboardEnum.NumberOfServicesInProgress:
-        return "Services In Progress";
+        return "Total Services In Progress";
+      case DashboardEnum.NumberOfServicesCompleted:
+        return "Total Services Completed";
       case DashboardEnum.NumberOfServicesPendingAcceptance:
-        return "Service Pending Acceptance";
+        return "Total Services QA Pending";
+      case DashboardEnum.NumberOfServicesPendingAcceptanceCustomer:
+        return "Total Services Confirmation Pending";
+      case DashboardEnum.NumberOfServicesForRevision:
+        return "Total Services Revison Pending";
       default:
         return "";
     }
@@ -80,8 +105,8 @@ export const DashboardEmployee = () => {
     <Grid container spacing={2}>
       <Grid item xs={4}>
         <GridItem
-          title={getTitleFor(DashboardEnum.NumberOfServicesCompleted)}
-          value={getValueFor(DashboardEnum.NumberOfServicesCompleted)}
+          title={getTitleFor(DashboardEnum.NumberOfServicesAssigned)}
+          value={getValueFor(DashboardEnum.NumberOfServicesAssigned)}
         />
       </Grid>
       <Grid item xs={4}>
@@ -92,8 +117,30 @@ export const DashboardEmployee = () => {
       </Grid>
       <Grid item xs={4}>
         <GridItem
+          title={getTitleFor(DashboardEnum.NumberOfServicesCompleted)}
+          value={getValueFor(DashboardEnum.NumberOfServicesCompleted)}
+        />
+      </Grid>
+      <Grid item xs={4}>
+        <GridItem
           title={getTitleFor(DashboardEnum.NumberOfServicesPendingAcceptance)}
           value={getValueFor(DashboardEnum.NumberOfServicesPendingAcceptance)}
+        />
+      </Grid>
+      <Grid item xs={4}>
+        <GridItem
+          title={getTitleFor(
+            DashboardEnum.NumberOfServicesPendingAcceptanceCustomer
+          )}
+          value={getValueFor(
+            DashboardEnum.NumberOfServicesPendingAcceptanceCustomer
+          )}
+        />
+      </Grid>
+      <Grid item xs={4}>
+        <GridItem
+          title={getTitleFor(DashboardEnum.NumberOfServicesForRevision)}
+          value={getValueFor(DashboardEnum.NumberOfServicesForRevision)}
         />
       </Grid>
     </Grid>

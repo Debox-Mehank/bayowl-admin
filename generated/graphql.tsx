@@ -80,9 +80,13 @@ export type DashboardContentInput = {
 export enum DashboardEnum {
   NumberOfCustomersRegistered = 'NumberOfCustomersRegistered',
   NumberOfCustomersWithPaidService = 'NumberOfCustomersWithPaidService',
+  NumberOfPaidService = 'NumberOfPaidService',
+  NumberOfServicesAssigned = 'NumberOfServicesAssigned',
   NumberOfServicesCompleted = 'NumberOfServicesCompleted',
+  NumberOfServicesForRevision = 'NumberOfServicesForRevision',
   NumberOfServicesInProgress = 'NumberOfServicesInProgress',
-  NumberOfServicesPendingAcceptance = 'NumberOfServicesPendingAcceptance'
+  NumberOfServicesPendingAcceptance = 'NumberOfServicesPendingAcceptance',
+  NumberOfServicesPendingAcceptanceCustomer = 'NumberOfServicesPendingAcceptanceCustomer'
 }
 
 export type DashboardInterfaceClass = {
