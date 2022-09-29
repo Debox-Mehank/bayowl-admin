@@ -1305,9 +1305,7 @@ export default function ServiceTrackingEmployee() {
               maxDuration: secondsToTime(ind.maxFileDuration ?? 0),
             };
             ind.addOn.map((elem) => {
-              (sObj as any)[elem.type] = elem.value
-                ? `₹${elem.value.toLocaleString("en-IN")} x ${elem.qty}`
-                : "N/A";
+              (sObj as any)[elem.type] = elem.value ? `${elem.qty}` : "--";
             });
             return sObj;
           }) ?? []
