@@ -88,6 +88,11 @@ export default function ServiceTracking() {
       width: 200,
     },
     {
+      field: "deliveryDaysRemaining",
+      headerName: "Delivery Days Remaining",
+      width: 200,
+    },
+    {
       field: "assign",
       headerName: "Assign",
       width: 150,
@@ -178,6 +183,54 @@ export default function ServiceTracking() {
               downloadA.click();
             }}
             disabled={cellValues.row.uploadedFiles.length <= 0}
+            variant="contained"
+          >
+            Download
+          </ColorButton>
+        );
+      },
+    },
+    {
+      field: "multitrackExport",
+      headerName: "Exports: Multitrack",
+      width: 180,
+      renderCell: (cellValues) => {
+        return (
+          <ColorButton
+            onClick={() => {
+              const downloadA = document.createElement("a");
+              downloadA.href = String(cellValues.row.multitrackFile);
+              downloadA.download = "true";
+              downloadA.click();
+            }}
+            disabled={
+              cellValues.row.statusType !== UserServiceStatus.Completed &&
+              !cellValues.row.multitrackFile
+            }
+            variant="contained"
+          >
+            Download
+          </ColorButton>
+        );
+      },
+    },
+    {
+      field: "stemsExport",
+      headerName: "Exports: Bus Stems",
+      width: 180,
+      renderCell: (cellValues) => {
+        return (
+          <ColorButton
+            onClick={() => {
+              const downloadA = document.createElement("a");
+              downloadA.href = String(cellValues.row.stemsFiles);
+              downloadA.download = "true";
+              downloadA.click();
+            }}
+            disabled={
+              cellValues.row.statusType !== UserServiceStatus.Completed &&
+              !cellValues.row.stemsFiles
+            }
             variant="contained"
           >
             Download
@@ -438,6 +491,11 @@ export default function ServiceTracking() {
           let sObj = {
             ...ind,
             id: ind._id,
+            deliveryDaysRemaining: ind.estDeliveryDate
+              ? moment().diff(moment(ind.estDeliveryDate), "days") > 0
+                ? moment().diff(moment(ind.estDeliveryDate), "days")
+                : "Delivered"
+              : "",
             paidAtMoment: moment(ind.paidAt).format("MMM Do YY, hh:mm"),
             allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
             allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",

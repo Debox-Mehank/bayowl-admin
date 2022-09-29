@@ -296,6 +296,11 @@ export default function ServiceTrackingEmployee() {
   const columns: GridColDef[] = [
     { field: "projectName", headerName: "Project Name", width: 150 },
     {
+      field: "deliveryDaysRemaining",
+      headerName: "Delivery Days Remaining",
+      width: 200,
+    },
+    {
       field: "download",
       headerName: "Download",
       width: 150,
@@ -1216,6 +1221,16 @@ export default function ServiceTrackingEmployee() {
             let sObj = {
               ...ind,
               id: ind._id,
+              deliveryDaysRemaining: ind.estDeliveryDate
+                ? moment().diff(moment(ind.estDeliveryDate), "days") > 0
+                  ? moment().diff(moment(ind.estDeliveryDate), "days")
+                  : [
+                      UserServiceStatus.Completed,
+                      UserServiceStatus.Delivered,
+                    ].includes(ind.statusType)
+                  ? "Delivered"
+                  : "Past Delivery Date"
+                : "",
               customerNotes: ind.notes ?? "",
               customerReuploadCount: ind.requestReuploadCounter ?? 0,
               revisionTimeByMaster: ind.revisionTimeByMaster
