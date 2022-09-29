@@ -14,6 +14,7 @@ import {
   Snackbar,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
@@ -170,6 +171,25 @@ export default function ServiceTracking() {
       },
     },
     {
+      field: "reference",
+      headerName: "Reference Files",
+      width: 200,
+      renderCell: (cellValues) => {
+        return (
+          <ColorButton
+            variant="contained"
+            onClick={() => {
+              setSelectedService(cellValues.row);
+              setShowrefModal(true);
+            }}
+            disabled={cellValues.row.referenceFiles.length <= 0}
+          >
+            View Reference Files
+          </ColorButton>
+        );
+      },
+    },
+    {
       field: "originalCustomerFiles",
       headerName: "Customer Files",
       width: 150,
@@ -292,6 +312,13 @@ export default function ServiceTracking() {
       field: "customerNotes",
       headerName: "Customer Notes",
       width: 200,
+      renderCell: (cellValues) => (
+        <Tooltip title={cellValues.row.customerNotes}>
+          <p style={{ overflowX: "hidden", textOverflow: "ellipsis" }}>
+            {cellValues.row.customerNotes}
+          </p>
+        </Tooltip>
+      ),
     },
     {
       field: "numberOfRevisionsByMaster",
@@ -307,11 +334,25 @@ export default function ServiceTracking() {
       field: "revisionNotesByMaster",
       headerName: "Internal Rejection Notes",
       width: 200,
+      renderCell: (cellValues) => (
+        <Tooltip title={cellValues.row.revisionNotesByMaster}>
+          <p style={{ overflowX: "hidden", textOverflow: "ellipsis" }}>
+            {cellValues.row.revisionNotesByMaster}
+          </p>
+        </Tooltip>
+      ),
     },
     {
       field: "revisionNotesByUser",
       headerName: "Customer Revision Notes",
       width: 200,
+      renderCell: (cellValues) => (
+        <Tooltip title={cellValues.row.revisionNotesByUser}>
+          <p style={{ overflowX: "hidden", textOverflow: "ellipsis" }}>
+            {cellValues.row.revisionNotesByUser}
+          </p>
+        </Tooltip>
+      ),
     },
     {
       field: "customerRejectionTime",
@@ -587,6 +628,7 @@ export default function ServiceTracking() {
 
   const [confimationDialog, setConfimationDialog] = useState<boolean>(false);
   const [selectedService, setSelectedService] = useState<UserServices>();
+  const [showrefModal, setShowrefModal] = useState<boolean>(false);
 
   // const [servicesData, setServicesData] = useState<Services[]>([]);
   return (
@@ -667,6 +709,45 @@ export default function ServiceTracking() {
               loading={loadingButton}
             >
               Submit
+            </LoadingButton>
+          </Stack>
+        </Box>
+      </Modal>
+
+      {/* Reference Modal */}
+      <Modal
+        open={showrefModal}
+        onClose={() => setShowrefModal(false)}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Stack spacing={2}>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Reference Files
+            </Typography>
+            {selectedService?.referenceFiles.map((el, idx) => (
+              <a
+                key={idx}
+                style={{
+                  display: "block",
+                  margin: "6px 0",
+                  color: "#f07202",
+                  fontSize: "15px",
+                }}
+                href={el ?? ""}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Reference - {idx + 1}
+              </a>
+            ))}
+            <LoadingButton
+              variant="contained"
+              onClick={(e) => setShowrefModal(false)}
+              loading={loadingButton}
+            >
+              Close
             </LoadingButton>
           </Stack>
         </Box>
