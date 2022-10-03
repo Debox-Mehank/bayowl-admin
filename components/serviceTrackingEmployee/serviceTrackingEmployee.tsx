@@ -77,6 +77,11 @@ export default function ServiceTrackingEmployee() {
     serviceId: string,
     revisionNumberF?: number
   ) => {
+    if ((filesArray?.length ?? 0) <= 0) {
+      setSnackMessage("Select a file to continue");
+      setShowSnack(true);
+      return;
+    }
     try {
       // For showing the upload progess
       let percentage: number | undefined = undefined;
@@ -722,6 +727,11 @@ export default function ServiceTrackingEmployee() {
 
   // Upload Working Files
   const handleUploadWorkingFiles = async (serviceId: string) => {
+    if ((filesArray?.length ?? 0) <= 0) {
+      setSnackMessage("Select a file to continue");
+      setShowSnack(true);
+      return;
+    }
     try {
       // For showing the upload progess
       let percentage: number | undefined = undefined;
@@ -884,7 +894,7 @@ export default function ServiceTrackingEmployee() {
       setData(
         arr.map((el) => ({
           ...el,
-          workingFile: finalUploadedUrl,
+          workingFile: el._id === serviceId ? finalUploadedUrl : el.workingFile,
         }))
       );
 
@@ -903,6 +913,12 @@ export default function ServiceTrackingEmployee() {
 
   // Upload Bus Stems Export
   const handleUploadBusFiles = async (serviceId: string) => {
+    if ((filesArray?.length ?? 0) <= 0) {
+      setSnackMessage("Select a file to continue");
+      setShowSnack(true);
+      return;
+    }
+
     try {
       // For showing the upload progess
       let percentage: number | undefined = undefined;
@@ -1058,7 +1074,7 @@ export default function ServiceTrackingEmployee() {
       setData(
         arr.map((el) => ({
           ...el,
-          stemsFiles: finalUploadedUrl,
+          stemsFiles: el._id === serviceId ? finalUploadedUrl : el.stemsFiles,
         }))
       );
 
@@ -1077,6 +1093,12 @@ export default function ServiceTrackingEmployee() {
 
   // Upload Multitrack Export
   const handleUploadMultitrackFiles = async (serviceId: string) => {
+    if ((filesArray?.length ?? 0) <= 0) {
+      setSnackMessage("Select a file to continue");
+      setShowSnack(true);
+      return;
+    }
+
     try {
       // For showing the upload progess
       let percentage: number | undefined = undefined;
@@ -1233,7 +1255,8 @@ export default function ServiceTrackingEmployee() {
       setData(
         arr.map((el) => ({
           ...el,
-          multitrackFile: finalUploadedUrl,
+          multitrackFile:
+            el._id === serviceId ? finalUploadedUrl : el.multitrackFile,
         }))
       );
 

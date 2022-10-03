@@ -32,8 +32,13 @@ interface AppBarProps extends MuiAppBarProps {
 }
 
 const sideMenuItemManager: ListOfService[] = [
+  ListOfService.Dashboard,
+  ListOfService.Services,
   ListOfService.UAM,
+  ListOfService.Payments,
+  ListOfService.TAM,
   ListOfService.ServiceTracking,
+  ListOfService.DashboardContent,
 ];
 
 const sideMenuItemEmployee: ListOfService[] = [
