@@ -334,10 +334,15 @@ export default function ServiceTrackingEmployee() {
           <ColorButton
             variant="contained"
             onClick={() => {
-              const downloadA = document.createElement("a");
-              downloadA.href = String(cellValues.row.uploadedFiles[0]);
-              downloadA.download = "true";
-              downloadA.click();
+              if (cellValues.row.uploadedFiles.length > 1) {
+                setSelectedService(cellValues.row);
+                setshowdownloadModal(true);
+              } else {
+                const downloadA = document.createElement("a");
+                downloadA.href = String(cellValues.row.uploadedFiles[0]);
+                downloadA.download = "true";
+                downloadA.click();
+              }
             }}
           >
             Download
@@ -1344,6 +1349,7 @@ export default function ServiceTrackingEmployee() {
   const [confimationDialog, setConfimationDialog] = useState<boolean>(false);
   const [selectedService, setSelectedService] = useState<UserServices>();
   const [showrefModal, setShowrefModal] = useState<boolean>(false);
+  const [showdownloadModal, setshowdownloadModal] = useState<boolean>(false);
   // const [servicesData, setServicesData] = useState<Services[]>([]);
   return (
     <>
@@ -1643,6 +1649,45 @@ export default function ServiceTrackingEmployee() {
             <LoadingButton
               variant="contained"
               onClick={(e) => setShowrefModal(false)}
+              loading={loadingButton}
+            >
+              Close
+            </LoadingButton>
+          </Stack>
+        </Box>
+      </Modal>
+
+      {/* Downloads Modal */}
+      <Modal
+        open={showdownloadModal}
+        onClose={() => setshowdownloadModal(false)}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Stack spacing={2}>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Download Files
+            </Typography>
+            {selectedService?.uploadedFiles.map((el, idx) => (
+              <a
+                key={idx}
+                style={{
+                  display: "block",
+                  margin: "6px 0",
+                  color: "#f07202",
+                  fontSize: "15px",
+                }}
+                href={el ?? ""}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Download - {idx + 1}
+              </a>
+            ))}
+            <LoadingButton
+              variant="contained"
+              onClick={(e) => setshowdownloadModal(false)}
               loading={loadingButton}
             >
               Close
