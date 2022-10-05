@@ -161,7 +161,7 @@ export default function ServiceTracking() {
               downloadA.click();
             }}
             disabled={
-              cellValues.row.statusType !== UserServiceStatus.Completed &&
+              cellValues.row.statusType !== UserServiceStatus.Completed ||
               !cellValues.row.workingFile
             }
             variant="contained"
@@ -230,7 +230,7 @@ export default function ServiceTracking() {
               downloadA.click();
             }}
             disabled={
-              cellValues.row.statusType !== UserServiceStatus.Completed &&
+              cellValues.row.statusType !== UserServiceStatus.Completed ||
               !cellValues.row.multitrackFile
             }
             variant="contained"
@@ -254,7 +254,7 @@ export default function ServiceTracking() {
               downloadA.click();
             }}
             disabled={
-              cellValues.row.statusType !== UserServiceStatus.Completed &&
+              cellValues.row.statusType !== UserServiceStatus.Completed ||
               !cellValues.row.stemsFiles
             }
             variant="contained"
