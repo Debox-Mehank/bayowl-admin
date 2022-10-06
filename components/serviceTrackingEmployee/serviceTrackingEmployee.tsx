@@ -2,6 +2,7 @@ import { LoadingButton } from "@mui/lab";
 import {
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -39,6 +40,7 @@ import { formatBytesNumber } from "./utils/formatBytes";
 import moment from "moment";
 import { secondsToTime } from "../../utility/helpers";
 import { ColorButton } from "../Button";
+import axios from "axios";
 
 const style = {
   position: "absolute",
@@ -72,6 +74,7 @@ export default function ServiceTrackingEmployee() {
   const [multipartPresignedQuery] = useGetMultipartPreSignedUrlsLazyQuery();
   const [finalizeMultipartUploadQuery] = useFinalizeMultipartUploadLazyQuery();
   const [addDeliveryFile] = useAddDeliveryFilesLazyQuery();
+  const [percentageUpload, setPercentageUpload] = useState<number>(0);
   const handleUploadSubmit = async (
     e: any,
     serviceId: string,
@@ -143,7 +146,9 @@ export default function ServiceTrackingEmployee() {
 
         let partsUploadArray: FinalMultipartUploadPartsInput[] = [];
 
+        let chCounter = 0;
         for (let index = 1; index < chunkCount + 1; index++) {
+          chCounter++;
           let start = (index - 1) * chunkSize;
           let end = index * chunkSize;
           let fileBlob =
@@ -151,11 +156,24 @@ export default function ServiceTrackingEmployee() {
           let signedUrl = multipartUrls[index - 1].signedUrl ?? "";
           let partNumber = multipartUrls[index - 1].PartNumber ?? 0;
 
-          let uploadChunk = await fetch(signedUrl, {
+          let uploadChunk = await axios({
+            url: signedUrl,
             method: "PUT",
-            body: fileBlob,
+            data: fileBlob,
+            headers: {
+              "Content-Type": "application/zip",
+            },
+            onUploadProgress: (pe) => {
+              let percentComplete = Math.round((pe.loaded / pe.total!) * 100);
+              let totalPercentComplete = Math.round(
+                ((chCounter - 1) / chunkCount) * 100 +
+                  percentComplete / chunkCount
+              );
+              setPercentageUpload((prev) => totalPercentComplete);
+            },
           });
-          let etag = uploadChunk.headers.get("etag");
+          let etag = uploadChunk.headers["etag"];
+
           partsUploadArray.push({
             ETag: etag ?? "",
             PartNumber: partNumber,
@@ -200,12 +218,19 @@ export default function ServiceTrackingEmployee() {
           return;
         }
 
-        await fetch(s3Url.getS3SignedURL, {
+        await axios({
+          url: s3Url.getS3SignedURL,
           method: "PUT",
+          data: file,
           headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/zip",
           },
-          body: file,
+          onUploadProgress: (pe) => {
+            let percentComplete = Math.round(
+              (pe.loaded / (pe.total ?? 0)) * 100
+            );
+            setPercentageUpload((prev) => percentComplete);
+          },
         });
         const imageUrl = s3Url.getS3SignedURL.split("?")[0];
 
@@ -290,7 +315,12 @@ export default function ServiceTrackingEmployee() {
       setOpenUpload(false);
       setSnackMessage("Files Uploaded Successfully");
       setShowSnack(true);
-    } catch (error: any) {}
+      setPercentageUpload(0);
+    } catch (error: any) {
+      setSnackMessage("Files Uploaded Successfully");
+      setShowSnack(true);
+      setPercentageUpload(0);
+    }
   };
   const [confirmUpload] = useConfirmUploadLazyQuery();
   const requestReupload = (serviceId: string) => {
@@ -796,7 +826,10 @@ export default function ServiceTrackingEmployee() {
 
         let partsUploadArray: FinalMultipartUploadPartsInput[] = [];
 
+        let chCounter = 0;
+
         for (let index = 1; index < chunkCount + 1; index++) {
+          chCounter++;
           let start = (index - 1) * chunkSize;
           let end = index * chunkSize;
           let fileBlob =
@@ -804,11 +837,25 @@ export default function ServiceTrackingEmployee() {
           let signedUrl = multipartUrls[index - 1].signedUrl ?? "";
           let partNumber = multipartUrls[index - 1].PartNumber ?? 0;
 
-          let uploadChunk = await fetch(signedUrl, {
+          let uploadChunk = await axios({
+            url: signedUrl,
             method: "PUT",
-            body: fileBlob,
+            data: fileBlob,
+            headers: {
+              "Content-Type": "application/zip",
+            },
+            onUploadProgress: (pe) => {
+              let percentComplete = Math.round(
+                (pe.loaded / (pe.total ?? 0)) * 100
+              );
+              let totalPercentComplete = Math.round(
+                ((chCounter - 1) / chunkCount) * 100 +
+                  percentComplete / chunkCount
+              );
+              setPercentageUpload((prev) => totalPercentComplete);
+            },
           });
-          let etag = uploadChunk.headers.get("etag");
+          let etag = uploadChunk.headers["etag"];
           partsUploadArray.push({
             ETag: etag ?? "",
             PartNumber: partNumber,
@@ -857,12 +904,19 @@ export default function ServiceTrackingEmployee() {
           return;
         }
 
-        await fetch(s3Url.getS3SignedURL, {
+        await axios({
+          url: s3Url.getS3SignedURL,
           method: "PUT",
+          data: file,
           headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/zip",
           },
-          body: file,
+          onUploadProgress: (pe) => {
+            let percentComplete = Math.round(
+              (pe.loaded / (pe.total ?? 0)) * 100
+            );
+            setPercentageUpload((prev) => percentComplete);
+          },
         });
         const imageUrl = s3Url.getS3SignedURL.split("?")[0];
 
@@ -909,10 +963,12 @@ export default function ServiceTrackingEmployee() {
       setOpenUploadWorking(false);
       setSnackMessage("Files Uploaded Successfully");
       setShowSnack(true);
+      setPercentageUpload(0);
     } catch (error: any) {
       setSnackMessage(error.toString());
       setShowSnack(true);
       setLoadingButton(false);
+      setPercentageUpload(0);
     }
   };
 
@@ -983,7 +1039,10 @@ export default function ServiceTrackingEmployee() {
 
         let partsUploadArray: FinalMultipartUploadPartsInput[] = [];
 
+        let chCounter = 0;
+
         for (let index = 1; index < chunkCount + 1; index++) {
+          chCounter++;
           let start = (index - 1) * chunkSize;
           let end = index * chunkSize;
           let fileBlob =
@@ -991,11 +1050,25 @@ export default function ServiceTrackingEmployee() {
           let signedUrl = multipartUrls[index - 1].signedUrl ?? "";
           let partNumber = multipartUrls[index - 1].PartNumber ?? 0;
 
-          let uploadChunk = await fetch(signedUrl, {
+          let uploadChunk = await axios({
+            url: signedUrl,
             method: "PUT",
-            body: fileBlob,
+            data: fileBlob,
+            headers: {
+              "Content-Type": "application/zip",
+            },
+            onUploadProgress: (pe) => {
+              let percentComplete = Math.round(
+                (pe.loaded / (pe.total ?? 0)) * 100
+              );
+              let totalPercentComplete = Math.round(
+                ((chCounter - 1) / chunkCount) * 100 +
+                  percentComplete / chunkCount
+              );
+              setPercentageUpload((prev) => totalPercentComplete);
+            },
           });
-          let etag = uploadChunk.headers.get("etag");
+          let etag = uploadChunk.headers["etag"];
           partsUploadArray.push({
             ETag: etag ?? "",
             PartNumber: partNumber,
@@ -1040,12 +1113,19 @@ export default function ServiceTrackingEmployee() {
           return;
         }
 
-        await fetch(s3Url.getS3SignedURL, {
+        await axios({
+          url: s3Url.getS3SignedURL,
           method: "PUT",
+          data: file,
           headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/zip",
           },
-          body: file,
+          onUploadProgress: (pe) => {
+            let percentComplete = Math.round(
+              (pe.loaded / (pe.total ?? 0)) * 100
+            );
+            setPercentageUpload((prev) => percentComplete);
+          },
         });
         const imageUrl = s3Url.getS3SignedURL.split("?")[0];
 
@@ -1089,10 +1169,12 @@ export default function ServiceTrackingEmployee() {
       setOpenUploadBus(false);
       setSnackMessage("Files Uploaded Successfully");
       setShowSnack(true);
+      setPercentageUpload(0);
     } catch (error: any) {
       setSnackMessage(error.toString());
       setShowSnack(true);
       setLoadingButton(false);
+      setPercentageUpload(0);
     }
   };
 
@@ -1163,7 +1245,10 @@ export default function ServiceTrackingEmployee() {
 
         let partsUploadArray: FinalMultipartUploadPartsInput[] = [];
 
+        let chCounter = 0;
+
         for (let index = 1; index < chunkCount + 1; index++) {
+          chCounter++;
           let start = (index - 1) * chunkSize;
           let end = index * chunkSize;
           let fileBlob =
@@ -1171,11 +1256,25 @@ export default function ServiceTrackingEmployee() {
           let signedUrl = multipartUrls[index - 1].signedUrl ?? "";
           let partNumber = multipartUrls[index - 1].PartNumber ?? 0;
 
-          let uploadChunk = await fetch(signedUrl, {
+          let uploadChunk = await axios({
+            url: signedUrl,
             method: "PUT",
-            body: fileBlob,
+            data: fileBlob,
+            headers: {
+              "Content-Type": "application/zip",
+            },
+            onUploadProgress: (pe) => {
+              let percentComplete = Math.round(
+                (pe.loaded / (pe.total ?? 0)) * 100
+              );
+              let totalPercentComplete = Math.round(
+                ((chCounter - 1) / chunkCount) * 100 +
+                  percentComplete / chunkCount
+              );
+              setPercentageUpload((prev) => totalPercentComplete);
+            },
           });
-          let etag = uploadChunk.headers.get("etag");
+          let etag = uploadChunk.headers["etag"];
           partsUploadArray.push({
             ETag: etag ?? "",
             PartNumber: partNumber,
@@ -1220,12 +1319,19 @@ export default function ServiceTrackingEmployee() {
           return;
         }
 
-        await fetch(s3Url.getS3SignedURL, {
+        await axios({
+          url: s3Url.getS3SignedURL,
           method: "PUT",
+          data: file,
           headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/zip",
           },
-          body: file,
+          onUploadProgress: (pe) => {
+            let percentComplete = Math.round(
+              (pe.loaded / (pe.total ?? 0)) * 100
+            );
+            setPercentageUpload((prev) => percentComplete);
+          },
         });
         const imageUrl = s3Url.getS3SignedURL.split("?")[0];
 
@@ -1271,10 +1377,12 @@ export default function ServiceTrackingEmployee() {
       setOpenUploadMultitrack(false);
       setSnackMessage("Files Uploaded Successfully");
       setShowSnack(true);
+      setPercentageUpload(0);
     } catch (error: any) {
       setSnackMessage(error.toString());
       setShowSnack(true);
       setLoadingButton(false);
+      setPercentageUpload(0);
     }
   };
 
@@ -1342,7 +1450,7 @@ export default function ServiceTrackingEmployee() {
       setLoading(false);
     };
     fetchServices();
-  }, []);
+  }, [getAllServiceForEmployee]);
   const [loading, setLoading] = useState<boolean>(false);
   const [showSnack, setShowSnack] = useState<boolean>(false);
   const [snackMessage, setSnackMessage] = useState<string>();
@@ -1397,13 +1505,27 @@ export default function ServiceTrackingEmployee() {
                 }}
               />
             </label>
-            <LoadingButton
+            <Button
               variant="contained"
               onClick={(e) => handleUploadSubmit(e, id, revisionNumber)}
-              loading={loadingButton}
+              disabled={loadingButton}
             >
-              Submit
-            </LoadingButton>
+              {loadingButton ? (
+                <>
+                  <CircularProgress color="inherit" size={20} />
+                  <Typography
+                    id="modal-modal-upload"
+                    variant="caption"
+                    component="p"
+                    sx={{ marginLeft: 1 }}
+                  >
+                    {percentageUpload > 0 && `${percentageUpload}%`}
+                  </Typography>
+                </>
+              ) : (
+                "Submit"
+              )}
+            </Button>
           </Stack>
         </Box>
       </Modal>
@@ -1443,13 +1565,27 @@ export default function ServiceTrackingEmployee() {
                 }}
               />
             </label>
-            <LoadingButton
+            <Button
               variant="contained"
               onClick={(e) => handleUploadWorkingFiles(id)}
-              loading={loadingButton}
+              disabled={loadingButton}
             >
-              Submit
-            </LoadingButton>
+              {loadingButton ? (
+                <>
+                  <CircularProgress color="inherit" size={20} />
+                  <Typography
+                    id="modal-modal-upload"
+                    variant="caption"
+                    component="p"
+                    sx={{ marginLeft: 1 }}
+                  >
+                    {percentageUpload > 0 && `${percentageUpload}%`}
+                  </Typography>
+                </>
+              ) : (
+                "Submit"
+              )}
+            </Button>
           </Stack>
         </Box>
       </Modal>
@@ -1489,13 +1625,27 @@ export default function ServiceTrackingEmployee() {
                 }}
               />
             </label>
-            <LoadingButton
+            <Button
               variant="contained"
               onClick={(e) => handleUploadBusFiles(id)}
-              loading={loadingButton}
+              disabled={loadingButton}
             >
-              Submit
-            </LoadingButton>
+              {loadingButton ? (
+                <>
+                  <CircularProgress color="inherit" size={20} />
+                  <Typography
+                    id="modal-modal-upload"
+                    variant="caption"
+                    component="p"
+                    sx={{ marginLeft: 1 }}
+                  >
+                    {percentageUpload > 0 && `${percentageUpload}%`}
+                  </Typography>
+                </>
+              ) : (
+                "Submit"
+              )}
+            </Button>
           </Stack>
         </Box>
       </Modal>
@@ -1535,13 +1685,27 @@ export default function ServiceTrackingEmployee() {
                 }}
               />
             </label>
-            <LoadingButton
+            <Button
               variant="contained"
               onClick={(e) => handleUploadMultitrackFiles(id)}
-              loading={loadingButton}
+              disabled={loadingButton}
             >
-              Submit
-            </LoadingButton>
+              {loadingButton ? (
+                <>
+                  <CircularProgress color="inherit" size={20} />
+                  <Typography
+                    id="modal-modal-upload"
+                    variant="caption"
+                    component="p"
+                    sx={{ marginLeft: 1 }}
+                  >
+                    {percentageUpload > 0 && `${percentageUpload}%`}
+                  </Typography>
+                </>
+              ) : (
+                "Submit"
+              )}
+            </Button>
           </Stack>
         </Box>
       </Modal>

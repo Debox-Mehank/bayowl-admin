@@ -516,6 +516,7 @@ export default function ServiceTracking() {
   const [empName, setEmpName] = useState<string>("");
   const [id, setId] = useState<string>("");
   const onCloseForReject = () => {
+    setLoadingButton(false);
     setOpenForReject(false);
     setNoteForReject("");
     setId("");
@@ -601,7 +602,7 @@ export default function ServiceTracking() {
       setLoading(false);
     };
     fetchServices();
-  }, []);
+  }, [getAllEmployees, getAllServiceForEmployee]);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [addRevisionNote] = useAddRevisionNotesByMasterLazyQuery();
