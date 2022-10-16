@@ -55,9 +55,11 @@ export default function UAM() {
             ...el,
             id: el._id,
             numberOfService: el.services.length,
-            lastLoggedIn: moment(el.lastLoggedIn).format("MMM Do YY, hh:mm a"),
-            createdAt: moment(el.createdAt).format("MMM Do YY, hh:mm a"),
-            updatedAt: moment(el.updatedAt).format("MMM Do YY, hh:mm a"),
+            lastLoggedIn: moment(el.lastLoggedIn).format(
+              "Do MMM YYYY, hh:mm a"
+            ),
+            createdAt: moment(el.createdAt).format("Do MMM YYYY, hh:mm a"),
+            updatedAt: moment(el.updatedAt).format("Do MMM YYYY, hh:mm a"),
           }))
         );
       }

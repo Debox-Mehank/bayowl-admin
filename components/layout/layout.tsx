@@ -253,6 +253,7 @@ function Layout({ typeRole }: { typeRole: string }) {
           {typeRole === "master" &&
             sideMenuItemMaster.map((ind: ListOfService) => (
               <MainListItems
+                selected={ind === currentService}
                 name={ind}
                 key={ind}
                 changeService={(ser: ListOfService) => setCurrentService(ser)}
@@ -261,6 +262,7 @@ function Layout({ typeRole }: { typeRole: string }) {
           {typeRole === "employee" &&
             sideMenuItemEmployee.map((ind: ListOfService) => (
               <MainListItems
+                selected={ind === currentService}
                 name={ind}
                 key={ind}
                 changeService={(ser: ListOfService) => setCurrentService(ser)}
@@ -269,6 +271,7 @@ function Layout({ typeRole }: { typeRole: string }) {
           {typeRole === "manager" &&
             sideMenuItemManager.map((ind: ListOfService) => (
               <MainListItems
+                selected={ind === currentService}
                 name={ind}
                 key={ind}
                 changeService={(ser: ListOfService) => setCurrentService(ser)}

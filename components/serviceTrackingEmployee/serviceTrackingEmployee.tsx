@@ -1411,7 +1411,9 @@ export default function ServiceTrackingEmployee() {
               customerNotes: ind.notes ?? "",
               customerReuploadCount: ind.requestReuploadCounter ?? 0,
               revisionTimeByMaster: ind.revisionTimeByMaster
-                ? moment(ind.revisionTimeByMaster).format("MMM Do YY, hh:mm a")
+                ? moment(ind.revisionTimeByMaster).format(
+                    "Do MMM YYYY, hh:mm a"
+                  )
                 : "",
               allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
               allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",

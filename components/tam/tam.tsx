@@ -80,11 +80,11 @@ export default function TAM() {
             type: ind.type!,
             createdBy: ind.createdBy!.name!,
             createdAt: ind.createdAt
-              ? moment(ind.createdAt).format("MMM Do YY, hh:mm a")
-              : moment().format("MMM Do YY, hh:mm a"),
+              ? moment(ind.createdAt).format("Do MMM YYYY, hh:mm a")
+              : moment().format("Do MMM YYYY, hh:mm a"),
             updatedAt: ind.updatedAt
-              ? moment(ind.updatedAt).format("MMM Do YY, hh:mm a")
-              : moment().format("MMM Do YY, hh:mm a"),
+              ? moment(ind.updatedAt).format("Do MMM YYYY, hh:mm a")
+              : moment().format("Do MMM YYYY, hh:mm a"),
             id: ind._id!,
           })) ?? []
         );
@@ -145,8 +145,8 @@ export default function TAM() {
           createdBy: localStorage.getItem("admin")
             ? JSON.parse(localStorage.getItem("admin")!)?.name ?? ""
             : "",
-          createdAt: moment().format("MMM Do YY, hh:mm a"),
-          updatedAt: moment().format("MMM Do YY, hh:mm a"),
+          createdAt: moment().format("Do MMM YYYY, hh:mm a"),
+          updatedAt: moment().format("Do MMM YYYY, hh:mm a"),
         });
         setData(prev);
         setShowSnack(true);

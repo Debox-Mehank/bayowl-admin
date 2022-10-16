@@ -75,11 +75,11 @@ export default function DashboardContentPage() {
             createdByName: ind.createdBy !== null ? ind.createdBy.name : "",
             createdAt:
               ind.createdAt !== null
-                ? moment(ind.createdAt).format("MMM Do YY, hh:mm a")
+                ? moment(ind.createdAt).format("Do MMM YYYY, hh:mm a")
                 : "",
             updatedAt:
               ind.updatedAt !== null
-                ? moment(ind.updatedAt).format("MMM Do YY, hh:mm a")
+                ? moment(ind.updatedAt).format("Do MMM YYYY, hh:mm a")
                 : "",
           })) ?? []
         );
@@ -227,8 +227,8 @@ export default function DashboardContentPage() {
       image: `${process.env.NEXT_PUBLIC_AWS_CLOUDFRONT}/${respObj.image}`,
       lastUpdatedByName: respObj.lastUpdatedBy.name,
       createdByName: respObj.createdBy.name,
-      createdAt: moment().format("MMM Do YY, hh:mm a"),
-      // updatedAt: moment().format("MMM Do YY, hh:mm a"),
+      createdAt: moment().format("Do MMM YYYY, hh:mm a"),
+      // updatedAt: moment().format("Do MMM YYYY, hh:mm a"),
     };
     setData([...data, newObj]);
     onClose();

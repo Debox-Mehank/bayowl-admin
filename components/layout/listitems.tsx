@@ -8,13 +8,15 @@ import { ListOfService } from "./interface";
 export const MainListItems = ({
   name,
   changeService,
+  selected,
 }: {
   name: ListOfService;
   changeService: (ser: ListOfService) => void;
+  selected: boolean;
 }) => {
   return (
     <React.Fragment>
-      <ListItemButton onClick={() => changeService(name)}>
+      <ListItemButton selected={selected} onClick={() => changeService(name)}>
         <ListItemIcon>
           <TableChartIcon />
         </ListItemIcon>

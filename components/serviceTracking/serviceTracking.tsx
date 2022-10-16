@@ -74,7 +74,9 @@ export default function ServiceTracking() {
     setData(
       arr.map((el) => ({
         ...el,
-        masterProjectApprovalTimeMoment: moment().format("MMM Do YY, hh:mm a"),
+        masterProjectApprovalTimeMoment: moment().format(
+          "Do MMM YYYY, hh:mm a"
+        ),
         statusType:
           el._id === serviceId ? UserServiceStatus.Delivered : el.statusType,
       }))
@@ -500,7 +502,7 @@ export default function ServiceTracking() {
             ...el,
             allotedTo: assignTo?.name,
             allotedBy: assignBy.name,
-            assignedTime: moment().format("MMM Do YY, hh:mm"),
+            assignedTime: moment().format("Do MMM YYYY, hh:mm"),
           };
         } else {
           return { ...el };
@@ -549,14 +551,14 @@ export default function ServiceTracking() {
                 ? "Delivered"
                 : "Past Delivery Date"
               : "",
-            paidAtMoment: moment(ind.paidAt).format("MMM Do YY, hh:mm"),
+            paidAtMoment: moment(ind.paidAt).format("Do MMM YYYY, hh:mm"),
             allotedTo: ind.assignedTo !== null ? ind.assignedTo!.name : "",
             allotedBy: ind.assignedBy !== null ? ind.assignedBy!.name : "",
             customerNotes: ind.notes ?? "",
             revisionNotesByMaster: ind.revisionNotesByMaster ?? "",
             customerReuploadCount: ind.requestReuploadCounter ?? 0,
             completionDate: ind.completionDate
-              ? moment(ind.completionDate).format("MMM Do YY, hh:mm")
+              ? moment(ind.completionDate).format("Do MMM YYYY, hh:mm")
               : "",
             revisionNotesByUser:
               ind.revisionFiles.length !== 0
@@ -566,16 +568,18 @@ export default function ServiceTracking() {
               ind.revisionFiles.length !== 0
                 ? moment(
                     ind.revisionFiles[ind.revisionFiles.length - 1].revisionTime
-                  ).format("MMM Do YY, hh:mm")
+                  ).format("Do MMM YYYY, hh:mm")
                 : "",
             assignedTime: ind.assignedTime
-              ? moment(ind.assignedTime).format("MMM Do YY, hh:mm")
+              ? moment(ind.assignedTime).format("Do MMM YYYY, hh:mm")
               : "",
             revisionTimeByMasterMoment: ind.revisionTimeByMaster
-              ? moment(ind.revisionTimeByMaster).format("MMM Do YY, hh:mm")
+              ? moment(ind.revisionTimeByMaster).format("Do MMM YYYY, hh:mm")
               : "",
             masterProjectApprovalTimeMoment: ind.masterProjectApprovalTime
-              ? moment(ind.masterProjectApprovalTime).format("MMM Do YY, hh:mm")
+              ? moment(ind.masterProjectApprovalTime).format(
+                  "Do MMM YYYY, hh:mm"
+                )
               : "",
             completedForString: ind.completionDate
               ? ind.completedFor === 0
